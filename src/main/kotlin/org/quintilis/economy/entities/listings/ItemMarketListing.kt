@@ -1,10 +1,10 @@
-package org.quintilis.economy.entites.listings
+package org.quintilis.economy.entities.listings
 
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
-import org.quintilis.economy.entites.BaseEntity
-import org.quintilis.economy.entites.annotations.Column
-import org.quintilis.economy.entites.annotations.PrimaryKey
+import org.quintilis.economy.entities.BaseEntity
+import org.quintilis.economy.entities.annotations.Column
+import org.quintilis.economy.entities.annotations.PrimaryKey
 import java.util.Date
 import java.util.UUID
 

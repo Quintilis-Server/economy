@@ -1,4 +1,4 @@
-package org.quintilis.economy.entites.annotations
+package org.quintilis.economy.entities.annotations
 
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)

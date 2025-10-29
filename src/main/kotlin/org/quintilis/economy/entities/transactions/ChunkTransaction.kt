@@ -1,8 +1,7 @@
-package org.quintilis.economy.entites.transactions
+package org.quintilis.economy.entities.transactions
 
-import lombok.NoArgsConstructor
-import org.quintilis.economy.entites.BaseEntity
-import org.quintilis.economy.entites.annotations.*
+import org.quintilis.economy.entities.BaseEntity
+import org.quintilis.economy.entities.annotations.*
 import java.util.UUID
 
 @TableName("chunk_transaction_details")

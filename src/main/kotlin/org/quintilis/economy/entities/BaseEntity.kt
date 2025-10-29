@@ -1,6 +1,6 @@
-package org.quintilis.economy.entites
+package org.quintilis.economy.entities
 
-import org.quintilis.economy.entites.annotations.*
+import org.quintilis.economy.entities.annotations.*
 import org.quintilis.economy.managers.DatabaseManager
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation

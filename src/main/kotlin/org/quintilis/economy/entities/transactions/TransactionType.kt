@@ -1,4 +1,4 @@
-package org.quintilis.economy.entites.transactions
+package org.quintilis.economy.entities.transactions
 
 enum class TransactionType {
     MARKET_BUY,

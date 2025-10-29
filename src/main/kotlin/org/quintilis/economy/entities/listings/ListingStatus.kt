@@ -1,4 +1,4 @@
-package org.quintilis.economy.entites.listings
+package org.quintilis.economy.entities.listings
 
 enum class ListingStatus {
     ACTIVE,
