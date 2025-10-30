@@ -47,8 +47,12 @@ object DatabaseManager {
     }
 
     @Throws(SQLException::class)
-    fun getConnection(): Connection? {
-        return dataSource?.connection
+    fun getConnection(): Connection {
+        try{
+            return dataSource?.connection!!
+        }catch(e: SQLException){
+            throw e
+        }
     }
 
 }
