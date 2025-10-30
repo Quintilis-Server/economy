@@ -4,10 +4,13 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
+import org.jdbi.v3.sqlobject.SqlObjectPlugin
+import org.quintilis.economy.dao.BaseDao
 import java.sql.Connection
 import java.sql.SQLException
 import kotlin.apply
 import kotlin.jvm.Throws
+import kotlin.reflect.KClass
 
 object DatabaseManager {
     private var dataSource: HikariDataSource? = null
@@ -39,6 +42,7 @@ object DatabaseManager {
 
         this.jdbi = Jdbi.create(dataSource).apply {
             installPlugin(KotlinPlugin())
+            installPlugin(SqlObjectPlugin())
         }
     }
 
@@ -53,6 +57,10 @@ object DatabaseManager {
         }catch(e: SQLException){
             throw e
         }
+    }
+
+    fun <T : BaseDao> getDAO(daoClass: KClass<T>):T{
+        return this.jdbi.onDemand(daoClass.java)
     }
 
 }

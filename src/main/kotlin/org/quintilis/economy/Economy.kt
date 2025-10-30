@@ -1,6 +1,7 @@
 package org.quintilis.economy
 
 import org.bukkit.plugin.java.JavaPlugin
+import org.quintilis.economy.listeners.PlayerJoinListener
 import org.quintilis.economy.managers.ConfigManager
 import org.quintilis.economy.managers.DatabaseManager
 import java.sql.Connection
@@ -21,6 +22,9 @@ class Economy : JavaPlugin() {
             logger.severe("Database connection error: ${e.message}")
             server.pluginManager.disablePlugin(this)
         }
+
+        //add listener
+        this.server.pluginManager.registerEvents(PlayerJoinListener(this.logger), this)
 
     }
 

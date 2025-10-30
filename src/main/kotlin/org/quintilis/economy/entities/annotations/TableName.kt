@@ -1,6 +1,6 @@
 package org.quintilis.economy.entities.annotations
 
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
 annotation class TableName(val name: String)
 

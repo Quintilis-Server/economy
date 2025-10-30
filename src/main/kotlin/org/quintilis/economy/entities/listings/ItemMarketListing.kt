@@ -5,9 +5,11 @@ import org.bukkit.inventory.ItemStack
 import org.quintilis.economy.entities.BaseEntity
 import org.quintilis.economy.entities.annotations.Column
 import org.quintilis.economy.entities.annotations.PrimaryKey
+import org.quintilis.economy.entities.annotations.TableName
 import java.util.Date
 import java.util.UUID
 
+@TableName("player_market_listings")
 data class ItemMarketListing(
     @PrimaryKey
     val id: Int,
