@@ -2,3 +2,9 @@ name: economy
 version: '1.0-SNAPSHOT'
 main: org.quintilis.economy.Economy
 api-version: '1.21'
+
+commands:
+    listing:
+        description: Main listing command
+        aliases: [l]
+        usage: /listings [subcomando]
