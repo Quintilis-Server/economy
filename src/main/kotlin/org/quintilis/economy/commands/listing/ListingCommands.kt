@@ -21,16 +21,16 @@ enum class ListingCommands: Commands {
             "listing.create.command.description",
             "economy.usage"
         )
-    ),
-    BALANCE(
-        "help",
-        "/listing help [page]",
-        HelpEntry(
-            "/listing help [page]",
-            "help.command.listing.description",
-            "economy.help"
-        )
     );
+//    BALANCE(
+//        "help",
+//        "/listing help [page]",
+//        HelpEntry(
+//            "/listing help [page]",
+//            "help.command.listing.description",
+//            "economy.help"
+//        )
+//    );
 
     override val command: String
     override val usage: String

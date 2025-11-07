@@ -1,17 +1,11 @@
 package org.quintilis.economy.commands
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.Style
-import net.kyori.adventure.text.format.TextColor
-import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
-import org.bukkit.Color
 import org.bukkit.command.Command
-import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import org.bukkit.util.StringUtil
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -47,30 +41,49 @@ abstract class BaseCommand(
             commandSender.sendMessage(Component.translatable("error.is_not_player"))
             return true;
         }
-        if(args.isEmpty()) {
-            this.help(commandSender, emptyList())
-            return true;
-        }else if(args[1] == "help"){
-            this.help(commandSender, args.copyOfRange(1,args.size).toList())
-            return true;
+        if(args.isEmpty() || args[0].equals("help", ignoreCase = true)) {
+            val helpArgs = if (args.isNotEmpty()) {
+                args.copyOfRange(1, args.size).toList()
+            } else {
+                emptyList()
+            }
+
+            this.help(commandSender, helpArgs)
+            return true
         }
 
         return this.commandWrapper(commandSender, label, args);
     }
 
     override fun tabComplete(sender: CommandSender, alias: String, args: Array<out String>): List<String?> {
+        val input = args.lastOrNull() ?: ""
 
-        return this.onTabComplete(sender, alias, args);
+        val suggestions: MutableList<String> = this.onTabComplete(sender, alias, args)
+        if(args.size == 1) {
+            suggestions.add("help")
+        }
+        val completions = mutableListOf<String>()
+        StringUtil.copyPartialMatches(
+            input,
+            suggestions.distinct(),
+            completions
+        )
+        return completions;
     }
 
-    fun help(sender: CommandSender, args: List<String>) {
+    protected fun help(sender: CommandSender, args: List<String>) {
         val accessibleCommands = this.helpEntries.filter { sender.hasPermission(it.permission) }
 
         val totalPages = max(1, ceil(accessibleCommands.size.toDouble() / pageSize).toInt())
         val page = args.getOrNull(0)?.toIntOrNull() ?: 1
 
         if(page !in 1..totalPages){
-//            sender.sendMessage(Component.translatable("error.invalid_page", Component.text(totalPages)))
+            sender.sendMessage(
+                Component.translatable(
+                    "error.invalid_page",
+                    Argument.component("total_pages",  Component.text(totalPages))
+                )
+            )
 
             return
         }
@@ -79,7 +92,7 @@ abstract class BaseCommand(
             Component.translatable(
                 "help.header",
                 Argument.component("page", Component.text(page)),
-                Argument.component("total_page",Component.text(totalPages))
+                Argument.component("total_pages",Component.text(totalPages))
             )
         )
 
