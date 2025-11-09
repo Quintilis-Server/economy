@@ -12,6 +12,6 @@ data class PlayerEntity(
     @Column("name")
     val name: String,
     @Column("points")
-    val points: Int
+    var points: Int
 ): BaseEntity(){
 }

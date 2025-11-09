@@ -21,7 +21,7 @@ class PlayerJoinListener(private val logger: Logger): Listener {
         if(!this.playerDao.isInDatabase(uuid)){
             logger.info("Player ${player.name} is not in the database")
             val playerEntity = PlayerEntity(uuid, player.name, 0);
-            playerEntity.save();
+            playerEntity.save<PlayerEntity>();
             logger.info("Player ${player.name} joined successfully")
             return
         }

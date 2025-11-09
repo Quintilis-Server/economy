@@ -4,7 +4,7 @@ import org.quintilis.economy.commands.Commands
 import org.quintilis.economy.commands.HelpEntry
 
 enum class ListingCommands: Commands {
-    MARKET(
+    REMOVE(
         "remove",
         "/listing remove [id]",
         HelpEntry(
@@ -13,7 +13,7 @@ enum class ListingCommands: Commands {
             "economy.usage"
         )
     ),
-    SELL(
+    CREATE(
         "create",
         "/listing create [price] [quantity]",
         HelpEntry(
@@ -21,16 +21,53 @@ enum class ListingCommands: Commands {
             "listing.create.command.description",
             "economy.usage"
         )
-    );
-//    BALANCE(
-//        "help",
-//        "/listing help [page]",
-//        HelpEntry(
-//            "/listing help [page]",
-//            "help.command.listing.description",
-//            "economy.help"
-//        )
-//    );
+    ),
+    BALANCE(
+        "balance",
+        "/listing balance",
+        HelpEntry(
+            "/listing balance",
+            "listing.balance.command.description",
+            ""
+        )
+    ),
+    MARKET(
+        "market",
+        "/listing market",
+        HelpEntry(
+            "/listing market",
+            "listing.market.command.description",
+            "economy.usage"
+        )
+    ),
+    LIST(
+        "list",
+        "/listing list",
+        HelpEntry(
+            "/listing list",
+            "listing.list.command.description",
+            "economy.usage"
+        )
+    ),
+    GIVE_POINTS(
+        "givepoints",
+        "/listing givepoints <player> <points>",
+        HelpEntry(
+            "/listing givepoints <player> <points>",
+            "listing.givepoints.command.description",
+            "economy.op"
+        )
+    ),
+    REMOVE_POINTS(
+        "removepoints",
+        "/listing removepoints <player> <points>",
+        HelpEntry(
+            "/listing removepoints <player> <points>",
+            "listing.removepoints.command.description",
+            "economy.op"
+        )
+    )
+    ;
 
     override val command: String
     override val usage: String

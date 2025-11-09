@@ -1,6 +1,7 @@
 package org.quintilis.economy.commands
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -33,7 +34,44 @@ abstract class BaseCommand(
     ): MutableList<String>
 
     private val pageSize = 5;
-//    private val mm = MiniMessage.miniMessage()
+
+    protected fun error(sender: CommandSender, subcommand: String): Boolean{
+        sender.sendMessage {
+            Component.translatable(
+                "error.unknown_subcommand",
+                Argument.component("command_name", Component.text(subcommand))
+            )
+        }
+        return true;
+    }
+
+    protected fun noPermission(sender: CommandSender): Boolean{
+        sender.sendMessage {
+            Component.translatable(
+                "error.no_permission",
+            )
+        }
+        return true;
+    }
+
+    protected fun noPlayer(sender: CommandSender): Boolean{
+        sender.sendMessage {
+            Component.translatable(
+                "error.no_player",
+            )
+        }
+        return true;
+    }
+
+    protected fun argumentsMissing(sender: CommandSender): Boolean{
+        sender.sendMessage {
+            Component.translatable(
+                "error.arguments_missing",
+                Argument.component("command_name", Component.text(this.name))
+            )
+        }
+        return true
+    }
 
 
     override fun execute(commandSender: CommandSender, label: String, args: Array<String>): Boolean {
