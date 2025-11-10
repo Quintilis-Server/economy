@@ -60,7 +60,7 @@ enum class ListingCommands: Commands {
         HelpEntry(
             "/listing givepoints <player> <points>",
             "givepoints",
-            "listing.givepoints.command.description",
+            "listing.give_points.command.description",
             "economy.op"
         )
     ),
@@ -70,7 +70,7 @@ enum class ListingCommands: Commands {
         HelpEntry(
             "/listing removepoints <player> <points>",
             "removepoints",
-            "listing.removepoints.command.description",
+            "listing.remove_points.command.description",
             "economy.op"
         )
     )

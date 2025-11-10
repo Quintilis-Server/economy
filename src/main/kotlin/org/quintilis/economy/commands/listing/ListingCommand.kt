@@ -6,11 +6,11 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 import org.quintilis.economy.commands.BaseCommand
 import org.quintilis.economy.commands.HelpEntry
 import org.quintilis.economy.dao.ListingDao
 import org.quintilis.economy.dao.PlayerDao
+import org.quintilis.economy.entities.PlayerEntity
 import org.quintilis.economy.entities.listings.Listing
 import org.quintilis.economy.managers.DatabaseManager
 
@@ -32,6 +32,7 @@ class ListingCommand : BaseCommand(
         return when(args[0].lowercase()) {
             ListingCommands.BALANCE.command -> this.balance(commandSender)
             ListingCommands.GIVE_POINTS.command -> this.givePoints(commandSender, args.drop(1))
+            ListingCommands.REMOVE_POINTS.command -> this.removePoints(commandSender, args.drop(1))
             ListingCommands.CREATE.command -> this.create(commandSender, args.drop(1))
             ListingCommands.LIST.command -> this.list(commandSender, args.drop(1))
             else -> this.error(commandSender, args[0])
@@ -54,7 +55,8 @@ class ListingCommand : BaseCommand(
         sender.sendMessage {
             Component.translatable(
                 "listing.list.response",
-                Argument.component("player", player.name())
+                Argument.component("player", player.name()),
+                Argument.numeric("quantity", listings.size)
             )
         }
         for(listing in listings){
@@ -140,14 +142,40 @@ class ListingCommand : BaseCommand(
         val playerEntity = playerDao.findById(player.uniqueId) ?: return false
         playerEntity.points += points.toInt()
 
+        playerEntity.save<PlayerEntity>()
+
         sender.sendMessage {
             Component.translatable(
-                "listing.givepoints.response",
+                "listing.give_points.response",
                 Argument.component("points", Component.text(points)),
                 Argument.component("player_name", Component.text(player.name))
             )
         }
         return true;
+    }
+
+    private fun removePoints(sender: CommandSender, args: List<String>): Boolean{
+        if(sender.hasPermission(ListingCommands.REMOVE_POINTS.helpEntry.permission)){
+            return this.noPermission(sender)
+        }
+        if(args.size> 2){
+            return this.argumentsMissing(sender)
+        }
+        val player = Bukkit.getPlayer(args[0]) ?: return this.noPlayer(sender)
+
+        val playerEntity = playerDao.findById(player.uniqueId) ?: return false
+        playerEntity.points -= args[1].toInt()
+
+        val savedEntity:PlayerEntity = playerEntity.save()
+
+        sender.sendMessage {
+            Component.translatable(
+                "listing.remove_points.response",
+                Argument.numeric("points", savedEntity.points),
+                Argument.string("player_name", player.name)
+            )
+        }
+        return true
     }
 
     private fun balance(sender: CommandSender) : Boolean{
