@@ -6,9 +6,10 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.quintilis.economy.commands.BaseCommand
 import org.quintilis.economy.commands.HelpEntry
-import org.quintilis.economy.dao.ItemDao
+import org.quintilis.economy.dao.ListingDao
 import org.quintilis.economy.dao.PlayerDao
 import org.quintilis.economy.entities.listings.Listing
 import org.quintilis.economy.managers.DatabaseManager
@@ -21,7 +22,8 @@ class ListingCommand : BaseCommand(
 ) {
 
     val playerDao = DatabaseManager.getDAO(PlayerDao::class)
-    val itemDao = DatabaseManager.getDAO(ItemDao::class)
+    val listingDao = DatabaseManager.getDAO(ListingDao::class)
+
 
     override val helpEntries: Array<HelpEntry> = ListingCommands.entries
         .map { it.helpEntry }
@@ -31,8 +33,45 @@ class ListingCommand : BaseCommand(
             ListingCommands.BALANCE.command -> this.balance(commandSender)
             ListingCommands.GIVE_POINTS.command -> this.givePoints(commandSender, args.drop(1))
             ListingCommands.CREATE.command -> this.create(commandSender, args.drop(1))
+            ListingCommands.LIST.command -> this.list(commandSender, args.drop(1))
             else -> this.error(commandSender, args[0])
         }
+    }
+
+    private fun list(sender: CommandSender, args: List<String?>): Boolean{
+        val player = args.getOrNull(0)?.let { Bukkit.getPlayer(it) } ?: (sender as Player)
+        val listings: List<Listing>
+        if(sender.hasPermission("economy.op")){
+            listings = listingDao.findBySeller(seller = player.uniqueId)
+            sender.sendMessage {
+                Component.translatable(
+                    "info.admin_action"
+                )
+            }
+        }else{
+            listings = listingDao.findBySellerActive(seller = player.uniqueId)
+        }
+        sender.sendMessage {
+            Component.translatable(
+                "listing.list.response",
+                Argument.component("player", player.name())
+            )
+        }
+        for(listing in listings){
+            val item = listing.getItem()
+            sender.sendMessage {
+                listing.id?.let {
+                    Component.translatable(
+                        "listing.list.line_response",
+                        Argument.numeric("id", it),
+                        Argument.component("item_name", item.displayName()),
+                        Argument.numeric("quantity", listing.quantity),
+                        Argument.numeric("price", listing.askingPricePerItem)
+                    )
+                }!!
+            }
+        }
+        return true;
     }
 
     private fun create(sender: CommandSender, args: List<String>): Boolean{
@@ -140,6 +179,7 @@ class ListingCommand : BaseCommand(
                     ListingCommands.CREATE.command -> suggestions.add("<price>")
                     ListingCommands.GIVE_POINTS.command -> suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                     ListingCommands.REMOVE_POINTS.command ->  suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
+                    ListingCommands.LIST.command -> suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                 }
             }
             3-> {

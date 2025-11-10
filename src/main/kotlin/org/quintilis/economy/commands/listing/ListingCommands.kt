@@ -9,6 +9,7 @@ enum class ListingCommands: Commands {
         "/listing remove [id]",
         HelpEntry(
             "/listing remove [id]",
+            "remove",
             "listing.remove.command.description",
             "economy.usage"
         )
@@ -18,6 +19,7 @@ enum class ListingCommands: Commands {
         "/listing create [price] [quantity]",
         HelpEntry(
             "/listing create [price] [quantity]",
+            "create",
             "listing.create.command.description",
             "economy.usage"
         )
@@ -27,6 +29,7 @@ enum class ListingCommands: Commands {
         "/listing balance",
         HelpEntry(
             "/listing balance",
+            "balance",
             "listing.balance.command.description",
             ""
         )
@@ -36,15 +39,17 @@ enum class ListingCommands: Commands {
         "/listing market",
         HelpEntry(
             "/listing market",
+            "market",
             "listing.market.command.description",
             "economy.usage"
         )
     ),
     LIST(
         "list",
-        "/listing list",
+        "/listing list <player>",
         HelpEntry(
-            "/listing list",
+            "/listing list <player>",
+            "list",
             "listing.list.command.description",
             "economy.usage"
         )
@@ -54,6 +59,7 @@ enum class ListingCommands: Commands {
         "/listing givepoints <player> <points>",
         HelpEntry(
             "/listing givepoints <player> <points>",
+            "givepoints",
             "listing.givepoints.command.description",
             "economy.op"
         )
@@ -63,6 +69,7 @@ enum class ListingCommands: Commands {
         "/listing removepoints <player> <points>",
         HelpEntry(
             "/listing removepoints <player> <points>",
+            "removepoints",
             "listing.removepoints.command.description",
             "economy.op"
         )

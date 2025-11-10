@@ -74,6 +74,8 @@ class Economy : JavaPlugin() {
         GlobalTranslator.translator().addSource(store)
 
         logger.info("Translation sources (en, pt_BR) registered successfully.")
+
+        logger.info("Plugin ${this.name} successfully initiated")
     }
 
     override fun onDisable() {

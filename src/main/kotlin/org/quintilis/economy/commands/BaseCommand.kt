@@ -1,7 +1,6 @@
 package org.quintilis.economy.commands
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -89,7 +88,10 @@ abstract class BaseCommand(
             this.help(commandSender, helpArgs)
             return true
         }
-
+        val helpEntry = helpEntries.find { it.commandName == args[0] }
+        if(helpEntry == null) {
+            return this.noPermission(commandSender)
+        }
         return this.commandWrapper(commandSender, label, args);
     }
 
