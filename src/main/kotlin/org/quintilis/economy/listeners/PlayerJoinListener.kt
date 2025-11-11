@@ -4,7 +4,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.quintilis.economy.dao.PlayerDao
-import org.quintilis.economy.entities.Player
+import org.quintilis.economy.entities.PlayerEntity
 import org.quintilis.economy.managers.DatabaseManager
 import java.lang.IllegalArgumentException
 import java.sql.SQLException
@@ -20,8 +20,8 @@ class PlayerJoinListener(private val logger: Logger): Listener {
 
         if(!this.playerDao.isInDatabase(uuid)){
             logger.info("Player ${player.name} is not in the database")
-            val playerEntity = Player(uuid, player.name, 0);
-            playerEntity.save();
+            val playerEntity = PlayerEntity(uuid, player.name, 0);
+            playerEntity.save<PlayerEntity>();
             logger.info("Player ${player.name} joined successfully")
             return
         }

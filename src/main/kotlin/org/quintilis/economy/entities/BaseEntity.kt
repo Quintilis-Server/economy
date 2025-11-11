@@ -2,6 +2,7 @@ package org.quintilis.economy.entities
 
 import org.quintilis.economy.entities.annotations.*
 import org.quintilis.economy.managers.DatabaseManager
+import java.util.UUID
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
@@ -24,11 +25,20 @@ abstract class BaseEntity {
 
 
 
-    fun save(){
+    fun <T: BaseEntity> save(): T{
         // Pega todas as propriedades da class
+        val pkValue = (primaryKeyProperty as KProperty1<BaseEntity, *>).get(this)
         val properties = this::class.primaryConstructor?.parameters
             ?.mapNotNull { param ->
                 this::class.memberProperties.find { prop -> prop.name == param.name && !prop.hasAnnotation<Transient>() }
+            }
+            ?.filter { prop ->
+                // SE o valor da PK for null, REMOVA a PK da lista de propriedades do INSERT
+                if (pkValue == null && prop.name == primaryKeyProperty.name) {
+                    false // Exclui a PK
+                } else {
+                    true // Inclui todas as outras (incluindo UUIDs!)
+                }
             }
             ?: emptyList()
         // Transforma para colunas sql
@@ -44,12 +54,24 @@ abstract class BaseEntity {
             VALUES ($namedParams)
             ON CONFLICT ($primaryKeyColumnName) DO UPDATE SET
             $updateSet
+            RETURNING *
         """.trimIndent()
 
-        DatabaseManager.jdbi.useHandle<Exception> { handle ->
-            handle.createUpdate(sql)
-                .bindBean(this)
-                .execute()
+        return DatabaseManager.jdbi.withHandle<T, Exception> { handle ->
+            val update = handle.createUpdate(sql)
+
+            properties.forEach { prop ->
+                @Suppress("UNCHECKED_CAST")
+                val typedProp = prop as KProperty1<BaseEntity, *>
+                val value = typedProp.get(this)
+                update.bind(prop.name, value)
+            }
+
+            // 3. FAÇA UM CAST NO 'mapTo'
+            //    Isto é necessário para o JDBI saber qual T é
+            update.executeAndReturnGeneratedKeys()
+                .mapTo(this.javaClass as Class<T>) // <-- O JDBI mapeia para a classe correta
+                .one()
         }
     }
 }
