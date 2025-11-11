@@ -1,6 +1,7 @@
 package org.quintilis.economy.commands
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -78,6 +79,7 @@ abstract class BaseCommand(
             commandSender.sendMessage(Component.translatable("error.is_not_player"))
             return true;
         }
+
         if(args.isEmpty() || args[0].equals("help", ignoreCase = true)) {
             val helpArgs = if (args.isNotEmpty()) {
                 args.copyOfRange(1, args.size).toList()
@@ -88,9 +90,16 @@ abstract class BaseCommand(
             this.help(commandSender, helpArgs)
             return true
         }
+
         val helpEntry = helpEntries.find { it.commandName == args[0] }
         if(helpEntry == null) {
             return this.noPermission(commandSender)
+        }
+
+        if(commandSender.hasPermission("economy.op")){
+            commandSender.sendMessage {
+                Component.translatable("info.admin_action")
+            }
         }
         return this.commandWrapper(commandSender, label, args);
     }
@@ -147,10 +156,17 @@ abstract class BaseCommand(
 
             val commandArg = Argument.component("command", Component.text(entry.command))
 
+            val escapedCommand = MiniMessage.miniMessage().escapeTags(entry.command)
+            val commandEscapedArg = Argument.component(
+                "command_escaped",
+                Component.text("'$escapedCommand'")
+            )
+
             val lineComponent = Component.translatable(
                 "help.command.format",
                 commandArg,
                 descriptionArg,
+                commandEscapedArg,
             )
             sender.sendMessage(lineComponent)
         }

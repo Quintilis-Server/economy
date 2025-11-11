@@ -10,5 +10,5 @@ interface PlayerDao: BaseDao {
     fun isInDatabase(@Bind("id")id: UUID): Boolean
 
     @SqlQuery("SELECT * FROM players WHERE id = :id")
-    fun findById(id: UUID): PlayerEntity?
+    fun findById(@Bind("id")id: UUID): PlayerEntity?
 }

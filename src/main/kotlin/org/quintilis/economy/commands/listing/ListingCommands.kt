@@ -34,21 +34,21 @@ enum class ListingCommands: Commands {
             ""
         )
     ),
-    MARKET(
-        "market",
-        "/listing market",
-        HelpEntry(
-            "/listing market",
-            "market",
-            "listing.market.command.description",
-            "economy.usage"
-        )
-    ),
+//    MARKET(
+//        "market",
+//        "/listing market",
+//        HelpEntry(
+//            "/listing market",
+//            "market",
+//            "listing.market.command.description",
+//            "economy.usage"
+//        )
+//    ),
     LIST(
         "list",
-        "/listing list <player>",
+        "/listing list [player]",
         HelpEntry(
-            "/listing list <player>",
+            "/listing list [player]",
             "list",
             "listing.list.command.description",
             "economy.usage"
@@ -56,9 +56,9 @@ enum class ListingCommands: Commands {
     ),
     GIVE_POINTS(
         "givepoints",
-        "/listing givepoints <player> <points>",
+        "/listing givepoints [player] [points]",
         HelpEntry(
-            "/listing givepoints <player> <points>",
+            "/listing givepoints [player] [points]",
             "givepoints",
             "listing.give_points.command.description",
             "economy.op"
@@ -66,9 +66,9 @@ enum class ListingCommands: Commands {
     ),
     REMOVE_POINTS(
         "removepoints",
-        "/listing removepoints <player> <points>",
+        "/listing removepoints [player] [points]",
         HelpEntry(
-            "/listing removepoints <player> <points>",
+            "/listing removepoints [player] [points]",
             "removepoints",
             "listing.remove_points.command.description",
             "economy.op"

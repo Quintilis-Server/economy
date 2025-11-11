@@ -11,4 +11,10 @@ interface ListingDao: BaseDao {
 
     @SqlQuery("SELECT * FROM listings WHERE seller_uuid = :seller AND status = 'ACTIVE'")
     fun findBySellerActive(@Bind("seller") seller: UUID): List<Listing>
+
+    @SqlQuery("SELECT id FROM listings WHERE seller_uuid = :seller AND status = 'ACTIVE'")
+    fun getListingIds(@Bind("seller") seller: UUID): List<Int>
+
+    @SqlQuery("UPDATE listings SET status = 'CANCELLED' WHERE id = :id AND seller_uuid = :seller RETURNING *")
+    fun removeListingById(@Bind("id") id: Int, @Bind("seller")seller: UUID): Listing?
 }

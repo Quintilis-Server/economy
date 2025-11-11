@@ -34,24 +34,18 @@ class ListingCommand : BaseCommand(
             ListingCommands.GIVE_POINTS.command -> this.givePoints(commandSender, args.drop(1))
             ListingCommands.REMOVE_POINTS.command -> this.removePoints(commandSender, args.drop(1))
             ListingCommands.CREATE.command -> this.create(commandSender, args.drop(1))
+            ListingCommands.REMOVE.command -> this.remove(commandSender, args.drop(1))
             ListingCommands.LIST.command -> this.list(commandSender, args.drop(1))
             else -> this.error(commandSender, args[0])
         }
     }
 
+
+
     private fun list(sender: CommandSender, args: List<String?>): Boolean{
         val player = args.getOrNull(0)?.let { Bukkit.getPlayer(it) } ?: (sender as Player)
-        val listings: List<Listing>
-        if(sender.hasPermission("economy.op")){
-            listings = listingDao.findBySeller(seller = player.uniqueId)
-            sender.sendMessage {
-                Component.translatable(
-                    "info.admin_action"
-                )
-            }
-        }else{
-            listings = listingDao.findBySellerActive(seller = player.uniqueId)
-        }
+        val listings: List<Listing> = listingDao.findBySeller(seller = player.uniqueId)
+
         sender.sendMessage {
             Component.translatable(
                 "listing.list.response",
@@ -68,12 +62,48 @@ class ListingCommand : BaseCommand(
                         Argument.numeric("id", it),
                         Argument.component("item_name", item.displayName()),
                         Argument.numeric("quantity", listing.quantity),
-                        Argument.numeric("price", listing.askingPricePerItem)
+                        Argument.numeric("price", listing.askingPricePerItem),
+                        Argument.component("status", Component.translatable(
+                            "listing.status.${listing.status.name}",
+                        ))
                     )
                 }!!
             }
         }
         return true;
+    }
+
+    private fun remove(sender: CommandSender, args: List<String>): Boolean{
+        if(args.isEmpty()) return this.argumentsMissing(sender)
+
+        val listingId = args[0].toIntOrNull() ?: return this.argumentsMissing(sender)
+
+        val player = sender as Player
+
+        // 1. O DAO agora faz a checagem E a atualização de uma só vez
+        val cancelledListing = listingDao.removeListingById(listingId, player.uniqueId)
+
+        if (cancelledListing == null) {
+            sender.sendMessage(
+                Component.translatable("listing.remove.error.not_found")
+            )
+            return true
+        }
+
+        val itemStack = cancelledListing.getItem()
+
+        val itemsSobrantes = player.inventory.addItem(itemStack)
+        for (item in itemsSobrantes.values) {
+            player.world.dropItem(player.location, item)
+        }
+
+        sender.sendMessage(
+            Component.translatable(
+                "listing.remove.response",
+                Argument.component("id", Component.text(cancelledListing.id.toString()))
+            )
+        )
+        return true
     }
 
     private fun create(sender: CommandSender, args: List<String>): Boolean{
@@ -107,7 +137,7 @@ class ListingCommand : BaseCommand(
         println(sender.uniqueId.toString())
 
         val listing = Listing(
-            sellerUuid = (sender as Player).uniqueId,
+            sellerUuid = sender.uniqueId,
             itemData = itemBytes,
             quantity = quantity,
             askingPricePerItem = price
@@ -179,11 +209,11 @@ class ListingCommand : BaseCommand(
     }
 
     private fun balance(sender: CommandSender) : Boolean{
-        val points = playerDao.findById((sender as Player).uniqueId)
+        val playerEntity = playerDao.findById((sender as Player).uniqueId) ?: return false
         sender.sendMessage {
             Component.translatable(
                 "listing.balance.response",
-                Argument.component("points", Component.text(points.toString()))
+                Argument.numeric("points", playerEntity.points)
             )
         }
         return true
@@ -196,25 +226,25 @@ class ListingCommand : BaseCommand(
 
         when (args.size) {
             1 ->{
-                val subcommands = ListingCommands.values()
+                val subcommands = ListingCommands.entries
                     .filter { sender.hasPermission(it.helpEntry.permission) }
                     .map { it.command }
                 suggestions.addAll(subcommands)
             }
             2 -> {
                 when(args[0].lowercase()) {
-                    ListingCommands.REMOVE.command -> suggestions.add("<item id>")
-                    ListingCommands.CREATE.command -> suggestions.add("<price>")
+                    ListingCommands.REMOVE.command -> suggestions.addAll(listingDao.getListingIds((sender as Player).uniqueId).map { it.toString() })
+//                    ListingCommands.CREATE.command -> suggestions.add
                     ListingCommands.GIVE_POINTS.command -> suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                     ListingCommands.REMOVE_POINTS.command ->  suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                     ListingCommands.LIST.command -> suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                 }
             }
-            3-> {
-                if(args[0].equals(ListingCommands.CREATE.command, ignoreCase = true)) {
-                    suggestions.add("<amount>")
-                }
-            }
+//            3-> {
+//                if(args[0].equals(ListingCommands.CREATE.command, ignoreCase = true)) {
+////                    suggestions.add("<amount>")
+//                }
+//            }
         }
 
         return suggestions;
