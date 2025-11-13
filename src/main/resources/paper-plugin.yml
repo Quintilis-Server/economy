@@ -8,3 +8,7 @@ commands:
         description: Main listing command
         aliases: [l]
         usage: /listings [subcomando]
+    transfer:
+        description: Main transfer command
+        aliases: [t]
+        usage: /transfer [subcomando]

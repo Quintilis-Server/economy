@@ -8,6 +8,7 @@ import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslator
 import org.bukkit.command.Command
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.economy.commands.listing.ListingCommand
+import org.quintilis.economy.commands.transfer.TransferCommand
 import org.quintilis.economy.listeners.PlayerJoinListener
 import org.quintilis.economy.managers.ConfigManager
 import org.quintilis.economy.managers.DatabaseManager
@@ -40,11 +41,17 @@ class Economy : JavaPlugin() {
         this.server.pluginManager.registerEvents(PlayerJoinListener(this.logger), this)
 
         //commands
+        this.registerCommands()
+
+
+
+    }
+
+    private fun registerCommands(){
         val listingCommand = ListingCommand();
         this.server.commandMap.register(listingCommand.name, "economy", listingCommand)
-
-
-
+        val transferCommand = TransferCommand()
+        this.server.commandMap.register(transferCommand.name, "economy", transferCommand)
     }
 
     private fun registerTranslations() {
