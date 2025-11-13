@@ -12,6 +12,7 @@ import org.quintilis.economy.dao.ListingDao
 import org.quintilis.economy.dao.PlayerDao
 import org.quintilis.economy.entities.PlayerEntity
 import org.quintilis.economy.entities.listings.Listing
+import org.quintilis.economy.entities.listings.ListingStatus
 import org.quintilis.economy.managers.DatabaseManager
 
 class ListingCommand : BaseCommand(
@@ -63,9 +64,7 @@ class ListingCommand : BaseCommand(
                         Argument.component("item_name", item.displayName()),
                         Argument.numeric("quantity", listing.quantity),
                         Argument.numeric("price", listing.askingPricePerItem),
-                        Argument.component("status", Component.translatable(
-                            "listing.status.${listing.status.name}",
-                        ))
+                        Argument.component("status", listing.status.getComponent())
                     )
                 }!!
             }
@@ -79,6 +78,28 @@ class ListingCommand : BaseCommand(
         val listingId = args[0].toIntOrNull() ?: return this.argumentsMissing(sender)
 
         val player = sender as Player
+
+        val listing = listingDao.findById(listingId)
+
+        if(listing == null){
+            sender.sendMessage {
+                Component.translatable(
+                    "listing.remove.error.not_found",
+                    Argument.numeric("id", listingId)
+                )
+            }
+            return true
+        }
+        if(listing.status != ListingStatus.ACTIVE){
+            sender.sendMessage {
+                Component.translatable(
+                    "listing.remove.error.listing_no_active",
+                    Argument.component("state", listing.status.getComponent())
+
+                )
+            }
+            return true
+        }
 
         // 1. O DAO agora faz a checagem E a atualização de uma só vez
         val cancelledListing = listingDao.removeListingById(listingId, player.uniqueId)

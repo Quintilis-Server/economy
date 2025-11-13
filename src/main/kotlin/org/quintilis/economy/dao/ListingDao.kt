@@ -12,6 +12,9 @@ interface ListingDao: BaseDao {
     @SqlQuery("SELECT * FROM listings WHERE seller_uuid = :seller AND status = 'ACTIVE'")
     fun findBySellerActive(@Bind("seller") seller: UUID): List<Listing>
 
+    @SqlQuery("SELECT * FROM listings WHERE id = :id")
+    fun findById(@Bind("id") id: Int): Listing?
+
     @SqlQuery("SELECT id FROM listings WHERE seller_uuid = :seller AND status = 'ACTIVE'")
     fun getListingIds(@Bind("seller") seller: UUID): List<Int>
 
