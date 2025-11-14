@@ -2,6 +2,7 @@ package org.quintilis.economy.dao
 
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.statement.SqlQuery
+import org.jdbi.v3.sqlobject.transaction.Transaction
 import org.quintilis.economy.entities.listings.Listing
 import java.util.UUID
 
@@ -18,6 +19,7 @@ interface ListingDao: BaseDao {
     @SqlQuery("SELECT id FROM listings WHERE seller_uuid = :seller AND status = 'ACTIVE'")
     fun getListingIds(@Bind("seller") seller: UUID): List<Int>
 
+    @Transaction
     @SqlQuery("UPDATE listings SET status = 'CANCELLED' WHERE id = :id AND seller_uuid = :seller RETURNING *")
     fun removeListingById(@Bind("id") id: Int, @Bind("seller")seller: UUID): Listing?
 }

@@ -29,7 +29,9 @@ data class Listing(
     val status: ListingStatus = ListingStatus.ACTIVE,
 ): BaseEntity(){
     fun getItem(): ItemStack {
-        return ItemStack.deserializeBytes(itemData)
+        val item = ItemStack.deserializeBytes(itemData)
+        item.amount *= this.quantity
+        return item
     }
 
     override fun equals(other: Any?): Boolean {

@@ -13,11 +13,11 @@ open class Transaction(
     @PrimaryKey
     val id: Int? = null,
     @Column("player_id")
-    val playerId: UUID?,
+    val playerId: UUID,
     @Column("transaction_type")
-    val transactionType: TransactionType?,
+    val transactionType: TransactionType,
     @Column("change")
-    val change: Int?,
+    val change: Int,
     @Column("time")
     val timestamp: Instant = Instant.now(),
     @Column("parent_id")

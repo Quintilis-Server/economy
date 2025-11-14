@@ -11,7 +11,10 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.quintilis.economy.commands.BaseCommand
 import org.quintilis.economy.commands.HelpEntry
+import org.quintilis.economy.dao.ListingDao
+import org.quintilis.economy.dao.MarketTransactionDao
 import org.quintilis.economy.dao.PlayerDao
+import org.quintilis.economy.dao.TransactionDao
 import org.quintilis.economy.entities.PlayerEntity
 import org.quintilis.economy.entities.transactions.Transaction
 import org.quintilis.economy.entities.transactions.TransactionType
@@ -25,6 +28,9 @@ class TransferCommand: BaseCommand(
 ) {
 
     private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
+    private val transactionDao = DatabaseManager.getDAO(TransactionDao::class)
+    private val listingDao = DatabaseManager.getDAO(ListingDao::class)
+    private val marketTransactionDao = DatabaseManager.getDAO(MarketTransactionDao::class)
 
     override val helpEntries: Array<HelpEntry> = TransferCommands.entries
         .map {it.helpEntry}
@@ -32,9 +38,55 @@ class TransferCommand: BaseCommand(
 
     override fun commandWrapper(commandSender: CommandSender, label: String, args: Array<out String>): Boolean {
         return when(args[0].lowercase()){
-            TransferCommands.LIST.command -> return true
+            TransferCommands.LIST.command -> this.list(commandSender)
             else -> this.transfer(commandSender, args.drop(1))
         }
+    }
+
+    private fun list(sender: CommandSender): Boolean{
+        val transactions = transactionDao.getTransactionsByPlayer((sender as Player).uniqueId)
+        val finalTransactions = transactions.mapNotNull { t ->
+
+            // (Lembrete: Isso gera o problema N+1 de performance SQL, mas seguindo sua lógica:)
+            val player = playerDao.findById(t.playerId) ?: return@mapNotNull null
+
+            when (t.transactionType) {
+                // CASO 1: Transferências
+                TransactionType.TRANSFER_TAKE, TransactionType.TRANSFER_RECEIVE -> {
+                    Component.translatable(
+                        "transfer.list.${t.transactionType.name.lowercase()}_line_response", // ex: transfer_take_line_response
+                        Argument.numeric("id", t.id!!),
+                        Argument.component("type", t.transactionType.getComponent()),
+                        Argument.string("player_name", player.name),
+                        Argument.numeric("change", t.change)
+                    )
+                }
+
+                // CASO 2: Mercado
+                TransactionType.MARKET_BUY, TransactionType.MARKET_SELL -> {
+                    val marketTransaction = marketTransactionDao.findByTransactionId(t.id!!) ?: return@mapNotNull null
+                    val listing = listingDao.findById(marketTransaction.listingId) ?: return@mapNotNull null
+                    Component.translatable(
+                        "market.list.${t.transactionType.name.lowercase()}_line_response",
+                        Argument.numeric("id", t.id),
+                        Argument.numeric("listing_id", marketTransaction.listingId),
+                        Argument.string("player_name", Bukkit.getPlayer(listing.sellerUuid)!!.name),
+                        Argument.component("item_name", listing.getItem().displayName()),
+                        Argument.numeric("quantity", marketTransaction.quantity),
+                        Argument.numeric("price", marketTransaction.pricePerItem),
+                    )
+                }
+
+                // Outros tipos (ignorar)
+                else -> null
+            }
+        }
+//        for(transaction in finalTransactions){
+//            sender.sendCommand {
+//
+//            }
+//        }
+        return true;
     }
 
     private fun transfer(sender: CommandSender, args: List<String>): Boolean{
@@ -105,7 +157,8 @@ class TransferCommand: BaseCommand(
             }
             return true
         }catch (ex: Exception){
-            sender.sendMessage(Component.text(ex.message!!).color(NamedTextColor.RED))
+            ex.printStackTrace()
+//            sender.sendMessage(Component.text(ex.message!!).color(NamedTextColor.RED))
             return false
         }
     }

@@ -1,5 +1,6 @@
 package org.quintilis.economy.entities
 
+import org.jdbi.v3.sqlobject.transaction.Transaction
 import org.quintilis.economy.entities.annotations.*
 import org.quintilis.economy.managers.DatabaseManager
 import java.util.UUID
@@ -57,7 +58,7 @@ abstract class BaseEntity {
             RETURNING *
         """.trimIndent()
 
-        return DatabaseManager.jdbi.withHandle<T, Exception> { handle ->
+        return DatabaseManager.jdbi.inTransaction<T, Exception> { handle ->
             val update = handle.createUpdate(sql)
 
             properties.forEach { prop ->
@@ -67,10 +68,8 @@ abstract class BaseEntity {
                 update.bind(prop.name, value)
             }
 
-            // 3. FAÇA UM CAST NO 'mapTo'
-            //    Isto é necessário para o JDBI saber qual T é
             update.executeAndReturnGeneratedKeys()
-                .mapTo(this.javaClass as Class<T>) // <-- O JDBI mapeia para a classe correta
+                .mapTo(this.javaClass as Class<T>)
                 .one()
         }
     }
