@@ -31,7 +31,7 @@ enum class ListingCommands: Commands {
             "/listing balance",
             "balance",
             "listing.balance.command.description",
-            ""
+            "economy.usage"
         )
     ),
 //    MARKET(

@@ -93,7 +93,7 @@ abstract class BaseCommand(
 
         val helpEntry = helpEntries.find { it.commandName == args[0] }
         if(helpEntry == null) {
-            return this.noPermission(commandSender)
+            return this.error(commandSender, args[0])
         }
 
         if(commandSender.hasPermission("economy.op")){
