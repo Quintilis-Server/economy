@@ -12,3 +12,7 @@ commands:
         description: Main transfer command
         aliases: [t]
         usage: /transfer [subcomando]
+    market:
+        description: Main buy command
+        aliases: [m]
+        usage: /market [subcomando]

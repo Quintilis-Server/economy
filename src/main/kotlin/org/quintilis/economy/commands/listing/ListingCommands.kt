@@ -3,7 +3,11 @@ package org.quintilis.economy.commands.listing
 import org.quintilis.economy.commands.Commands
 import org.quintilis.economy.commands.HelpEntry
 
-enum class ListingCommands: Commands {
+enum class ListingCommands(
+    override val command: String,
+    override val usage: String,
+    override val helpEntry: HelpEntry
+): Commands {
     REMOVE(
         "remove",
         "/listing remove [id]",
@@ -74,15 +78,4 @@ enum class ListingCommands: Commands {
             "economy.op"
         )
     )
-    ;
-
-    override val command: String
-    override val usage: String
-    override val helpEntry: HelpEntry
-
-    constructor (command: String, usage: String, helpEntry: HelpEntry){
-        this.command = command;
-        this.usage = usage;
-        this.helpEntry = helpEntry;
-    }
 }
