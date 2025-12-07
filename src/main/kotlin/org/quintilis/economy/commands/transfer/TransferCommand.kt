@@ -19,6 +19,7 @@ import org.quintilis.economy.entities.PlayerEntity
 import org.quintilis.economy.entities.transactions.Transaction
 import org.quintilis.economy.entities.transactions.TransactionType
 import org.quintilis.economy.managers.DatabaseManager
+import org.quintilis.economy.services.TransactionService
 
 class TransferCommand: BaseCommand(
     name = "transfer",
@@ -73,7 +74,7 @@ class TransferCommand: BaseCommand(
                         Argument.string("player_name", Bukkit.getPlayer(listing.sellerUuid)!!.name),
                         Argument.component("item_name", listing.getItem().displayName()),
                         Argument.numeric("quantity", marketTransaction.quantity),
-                        Argument.numeric("price", marketTransaction.pricePerItem),
+                        Argument.numeric("price", listing.askingPricePerItem),
                     )
                 }
 
@@ -121,24 +122,7 @@ class TransferCommand: BaseCommand(
                 return true;
             }
 
-            val takeTransaction = Transaction(
-                playerId = senderPlayer.uniqueId,
-                transactionType = TransactionType.TRANSFER_TAKE,
-                change = -amount
-            ).save<Transaction>()
-
-            senderEntity.points -= amount
-            senderEntity.save<PlayerEntity>()
-
-            Transaction(
-                playerId = receiverPlayer.uniqueId,
-                transactionType = TransactionType.TRANSFER_RECEIVE,
-                change = amount,
-                parentId = takeTransaction.id,
-            ).save<Transaction>()
-
-            receiverEntity.points += amount
-            receiverEntity.save<PlayerEntity>()
+            TransactionService.createTransferTransaction(senderEntity, receiverEntity, amount)
 
             sender.sendMessage {
                 Component.translatable(

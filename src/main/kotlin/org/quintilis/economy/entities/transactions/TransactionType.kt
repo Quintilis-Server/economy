@@ -10,7 +10,9 @@ enum class TransactionType {
     ADMIN_GIVE,
     ADMIN_TAKE,
     TRANSFER_TAKE,
-    TRANSFER_RECEIVE;
+    TRANSFER_RECEIVE,
+    CHUNK_CLAIM,
+    CHUNK_UNCLAIM;
 
     fun getComponent(): Component{
         return Component.translatable("transaction.type.$name")

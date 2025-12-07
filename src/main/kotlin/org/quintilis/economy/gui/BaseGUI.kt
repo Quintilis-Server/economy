@@ -1,0 +1,79 @@
+package org.quintilis.economy.gui
+
+import dev.triumphteam.gui.builder.item.ItemBuilder
+import dev.triumphteam.gui.guis.BaseGui
+import dev.triumphteam.gui.guis.Gui
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.ComponentLike
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.Material
+import org.bukkit.entity.Player
+import java.text.MessageFormat
+
+abstract class BaseGUI(
+    val player: Player,
+    val titleKey: String,
+    val rows: Int = 6,
+    val pageSize: Int = 45,
+    val parent: BaseGui? = null
+) {
+    protected val mm = MiniMessage.miniMessage()
+
+    val gui = Gui.paginated()
+        .title(Component.translatable(titleKey))
+        .rows(rows)
+        .pageSize(pageSize)
+        .disableAllInteractions()
+        .create()
+
+    init{
+        this.setupLayout()
+    }
+
+    protected fun trans(key: String, vararg args: ComponentLike): Component {
+        println(player.locale())
+        val format = Component.translatable(key, *args)
+        
+        // Render the translatable component using GlobalTranslator
+        return GlobalTranslator.render(format, player.locale())
+    }
+
+    private fun setupLayout() {
+        val filler = ItemBuilder.from(Material.GRAY_STAINED_GLASS_PANE)
+            .name(Component.empty())
+            .asGuiItem()
+
+        gui.filler.fillBottom(filler)
+
+        gui.setItem(rows, 3, ItemBuilder.from(Material.PAPER)
+            .name(trans("gui.previous_page"))
+            .asGuiItem { gui.previous() }) // .previous() existe na PaginatedGui
+
+        gui.setItem(rows, 7, ItemBuilder.from(Material.PAPER)
+            .name(trans("gui.next_page"))
+            .asGuiItem { gui.next() }) // .next() existe na PaginatedGui
+
+        if (parent != null) {
+            gui.setItem(rows, 5, ItemBuilder.from(Material.ARROW)
+                .name(trans("gui.back"))
+                .asGuiItem {
+                    parent.open(player)
+                })
+        } else {
+            gui.setItem(rows, 5, ItemBuilder.from(Material.BARRIER)
+                .name(trans("gui.close"))
+                .asGuiItem {
+                    gui.close(player)
+                })
+        }
+    }
+
+    abstract fun loadItems()
+
+    fun open() {
+        loadItems()
+        gui.open(player)
+    }
+}

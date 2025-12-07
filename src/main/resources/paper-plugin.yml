@@ -7,8 +7,12 @@ commands:
     listing:
         description: Main listing command
         aliases: [l]
-        usage: /listings [subcomando]
+        usage: /listings [subcommand]
     transfer:
         description: Main transfer command
         aliases: [t]
-        usage: /transfer [subcomando]
+        usage: /transfer [subcommand]
+    market:
+        description: Main buy command
+        aliases: [m]
+        usage: /market [subcommand]

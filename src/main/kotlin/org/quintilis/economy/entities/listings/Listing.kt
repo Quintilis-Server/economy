@@ -1,7 +1,10 @@
 package org.quintilis.economy.entities.listings
 
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.quintilis.economy.entities.BaseEntity
+import org.quintilis.economy.entities.PlayerEntity
 import org.quintilis.economy.entities.annotations.Column
 import org.quintilis.economy.entities.annotations.PrimaryKey
 import org.quintilis.economy.entities.annotations.TableName
@@ -18,7 +21,7 @@ data class Listing(
     @Column("item_data")
     val itemData: ByteArray,
     @Column("quantity")
-    val quantity: Int,
+    var quantity: Int,
     @Column("asking_price_per_item")
     val askingPricePerItem: Int,
     @Column("created_at")
@@ -32,6 +35,10 @@ data class Listing(
         val item = ItemStack.deserializeBytes(itemData)
         item.amount *= this.quantity
         return item
+    }
+
+    fun getSellerPlayer(): Player? {
+        return Bukkit.getPlayer(sellerUuid)
     }
 
     override fun equals(other: Any?): Boolean {

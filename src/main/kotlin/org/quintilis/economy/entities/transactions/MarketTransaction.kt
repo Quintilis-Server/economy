@@ -14,12 +14,7 @@ data class MarketTransaction(
     @Column("listing_id")
     val listingId: Int,
 
-    @Column("item_id")
-    val itemId: Int,
-
     @Column("quantity")
     val quantity: Int,
 
-    @Column("price_per_item")
-    val pricePerItem: Int
 ): BaseEntity()

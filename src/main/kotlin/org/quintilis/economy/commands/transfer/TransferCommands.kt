@@ -3,7 +3,11 @@ package org.quintilis.economy.commands.transfer
 import org.quintilis.economy.commands.Commands
 import org.quintilis.economy.commands.HelpEntry
 
-enum class TransferCommands: Commands {
+enum class TransferCommands(
+    override val command: String,
+    override val usage: String,
+    override val helpEntry: HelpEntry,
+): Commands {
     SEND(
         "send",
         "/transfer send [player] [amount]",
@@ -24,14 +28,4 @@ enum class TransferCommands: Commands {
             "economy.usage"
         )
     );
-
-    override val command: String
-    override val usage: String
-    override val helpEntry: HelpEntry
-
-    constructor (command: String, usage: String, helpEntry: HelpEntry){
-        this.command = command;
-        this.usage = usage;
-        this.helpEntry = helpEntry;
-    }
 }
