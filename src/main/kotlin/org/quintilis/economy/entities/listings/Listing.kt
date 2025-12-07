@@ -29,7 +29,7 @@ data class Listing(
     @Column("expires_at")
     val expiresAt: Instant = Instant.now().plus(7, ChronoUnit.DAYS),
     @Column("status")
-    val status: ListingStatus = ListingStatus.ACTIVE,
+    var status: ListingStatus = ListingStatus.ACTIVE,
 ): BaseEntity(){
     fun getItem(): ItemStack {
         val item = ItemStack.deserializeBytes(itemData)

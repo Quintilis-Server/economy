@@ -6,7 +6,7 @@ import org.quintilis.economy.commands.HelpEntry
 enum class ListingCommands(
     override val command: String,
     override val usage: String,
-    override val helpEntry: HelpEntry,
+    override val helpEntry: HelpEntry
 ): Commands {
     REMOVE(
         "remove",
@@ -77,5 +77,5 @@ enum class ListingCommands(
             "listing.remove_points.command.description",
             "economy.op"
         )
-    );
+    )
 }

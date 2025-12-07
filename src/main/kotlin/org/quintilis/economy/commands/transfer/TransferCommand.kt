@@ -77,16 +77,9 @@ class TransferCommand: BaseCommand(
                         Argument.numeric("price", listing.askingPricePerItem),
                     )
                 }
-
-                // Outros tipos (ignorar)
                 else -> null
             }
         }
-//        for(transaction in finalTransactions){
-//            sender.sendCommand {
-//
-//            }
-//        }
         return true;
     }
 

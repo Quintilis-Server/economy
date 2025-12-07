@@ -161,8 +161,6 @@ class ListingCommand : BaseCommand(
 
         val itemBytes = itemParaSalvar.serializeAsBytes()
 
-//        println(sender.uniqueId.toString())
-
         val listing = Listing(
             sellerUuid = sender.uniqueId,
             itemData = itemBytes,
