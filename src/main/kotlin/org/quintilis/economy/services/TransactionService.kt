@@ -1,5 +1,6 @@
 package org.quintilis.economy.services
 
+import org.bukkit.Chunk
 import org.quintilis.economy.dao.ListingDao
 import org.quintilis.economy.entities.BaseEntity
 import org.quintilis.economy.entities.PlayerEntity
@@ -93,6 +94,10 @@ class TransactionService {
             }
         }
 
+
+        fun createClaimTransaction(leader: PlayerEntity, chunk: Chunk) {
+
+        }
 
         fun createTransferTransaction(sender: PlayerEntity, receiver: PlayerEntity, quantity: Int){
             DatabaseManager.jdbi.inTransaction<Unit, Exception> {
