@@ -1,0 +1,138 @@
+# ============================================
+# Erros e Avisos Globais
+# ============================================
+error:
+    invalid_page: "<red>Página inválida. Por favor, use um número entre [1-<total_pages>]."
+    is_not_player: "Esse comando só pode ser usado por um jogador."
+    unknown_subcommand: "<red>Subcomando desconhecido: <command_name>."
+    no_permission: "<red>Você não tem permissão de usar esse comando."
+    no_player: "<red>Jogador não encontrado."
+    arguments_missing: "<red>Faltam argumentos para completar o comando. Use <gold>/<command_name> help</gold> para mais informações."
+
+info:
+    admin_action: "<dark_red>Ação admin"
+
+# ============================================
+# Sistema de Ajuda
+# ============================================
+help:
+    header: "<gold>---[ Ajuda Factions (Página <page>/<total_pages>) ]---</gold>"
+    footer: "<gold>---[ Digite <bold>/<command> help <pagina></bold> para ver mais ]---</gold>"
+    command:
+        format: "<gold><command></gold><gray>: <description></gray>"
+
+# ============================================
+# Mercado - Gerenciamento de Anúncios (Listing)
+# ============================================
+listing:
+    balance:
+        command:
+            description: "Comando para mostrar seu saldo no mercado."
+        response: "Seu saldo atual é de: <bold><points></bold>"
+    
+    create:
+        command:
+            description: "Vende o item da mão. Uso: /mercado anunciar <preço> [quantidade]. O valor cai quando alguém comprar."
+        response: "Anúncio ID: <bold><id></bold> criado com sucesso. Você receberá o valor quando outro player comprar seu item."
+        error:
+            no_item_in_hand: "<red>Nenhum item na sua mão. Segure algo para vender."
+            invalid_amount: "<red>Quantidade de itens na mão insuficiente."
+    
+    remove:
+        command:
+            description: "Remove um anúncio seu. O item volta para o inventário ou cai no chão."
+        response: "Anúncio <id> foi removido com sucesso. Itens retornados ao vendedor."
+        error:
+            listing_no_active: "<red>Anúncio já encerrado. Estado: <state>"
+            no_listing: "<red>Anúncio <bold><id></bold> não encontrado."
+    
+    give_points:
+        command:
+            description: "Comando ADM: Dá pontos a um jogador."
+        response: "<bold><points></bold> pontos dados ao jogador <bold><player_name></bold>."
+    
+    remove_points:
+        command:
+            description: "Comando ADM: Remove pontos de um jogador."
+        response: "<bold><points></bold> pontos removidos do jogador <bold><player_name></bold>."
+    
+    list:
+        command:
+            description: "Lista seus anúncios ou de outro jogador."
+        response: "Anúncios do jogador <bold><player></bold> (<gold><quantity></gold>):"
+        line_response: "<gray>ID <id></gray>: <gold><item_name></gold> (<quantity>x) por <bold><price></bold> cada. [Estado: <status>]"
+    
+    status:
+        ACTIVE: "<green>Ativo"
+        SOLD: "<yellow>Vendido"
+        EXPIRED: "<red>Expirado"
+        CANCELLED: "<dark_red>Cancelado"
+
+# ============================================
+# Sistema de Transferência e Transações
+# ============================================
+transfer:
+    command:
+        description: "Transfere dinheiro para um jogador online."
+    error:
+        no_money: "<red>Pontos <bold>insuficientes</bold>."
+        same_player: "<red>Você não pode mandar dinheiro para você mesmo."
+        online_player: "<red>O jogador deve estar online para realizar a transferência."
+    sender:
+        response: "<bold><points></bold> transferidos para <player>"
+    receiver:
+        response: "<bold><points></bold> recebidos do jogador <player>"
+    
+    list:
+        command:
+            description: "Lista as últimas transações realizadas."
+        response: "Suas transações (<bold><quantity></bold>):"
+        TRANSFER_TAKE_line_response: "<gray>ID <id></gray>: <type> para <player_name> | Valor: <change>"
+        TRANSFER_RECEIVE_line_response: "<gray>ID <id></gray>: <type> de <player_name> | Valor: <change>"
+        MARKET_BUY_line_response: "<gray>ID <id></gray>: <type> do anúncio <bold><listing_id></bold>. Vendedor: <player_name> | Item: <item_name> (<quantity>x) | Valor unitário: <price>"
+        MARKET_SELL_line_response: "<gray>ID <id></gray>: <type> do anúncio <bold><listing_id></bold>. Comprador: <player_name> | Item: <item_name> (<quantity>x) | Valor unitário: <price>"
+
+transaction:
+    type:
+        MARKET_BUY: "Compra no Mercado"
+        TRANSFER_TAKE: "<dark_red>Enviou"
+        TRANSFER_RECEIVE: "<dark_green>Recebeu"
+
+# ============================================
+# Mercado
+# ============================================
+market:
+    command:
+        description: "Comando para abrir o menu do mercado."
+    weapons: "<red><bold>Mercado de Armas"
+    armor: "<blue><bold>Mercado de Armaduras"
+    tools: "<green><bold>Mercado de Ferramentas"
+    food: "<yellow><bold>Mercado de Alimentos"
+    ores: "<gold><bold>Mercado de Minérios"
+    blocks: "<gray><bold>Mercado de Blocos"
+    purchase:
+        success: "<green>Você comprou <bold><0>x <1></bold> por <bold><gold><2></gold></bold> pontos!"
+        error:
+            insufficient_funds: "<red>Você não tem pontos suficientes! Necessário: <bold><0></bold>, Você tem: <bold><1></bold>"
+            not_found: "<red>Anúncio não encontrado ou já foi vendido."
+            seller_is_buyer: "<red>Você não pode comprar seu próprio anúncio!"
+            inventory_full: "<red>Inventário cheio! Libere espaço e tente novamente."
+
+# ============================================
+# Interface Gráfica (GUI)
+# ============================================
+gui:
+    previous_page: "<gold>Página Anterior"
+    next_page: "<gold>Próxima Página"
+    back: "<gold>Voltar"
+    close: "<red>Fechar"
+    
+    market:
+        title: "Mercado"
+        item:
+            lore:
+                seller: "<gray>Vendedor: <white><0>"
+                quantity: "<gray>Quantidade: <white><0>"
+                price: "<gray>Preço por item: <gold><0>"
+                total: "<gray>Preço total: <bold><gold><0>"
+                click_to_buy: "<green><bold>Clique para comprar!"

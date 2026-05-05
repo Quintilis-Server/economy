@@ -11,6 +11,7 @@ import org.quintilis.economy.entities.listings.ListingStatus
 import org.quintilis.economy.entities.transactions.AdminTransaction
 import org.quintilis.economy.entities.transactions.Transaction
 import org.quintilis.economy.entities.transactions.TransactionType
+import org.quintilis.economy.market.MarketCategory
 import org.quintilis.economy.services.EconomyServices
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.clan.ClanCommands
@@ -42,11 +43,12 @@ class ListingCommand : BaseCommand(
         val subArgs = args.drop(1)
         return when(rootCommand) {
             ListingCommands.BALANCE -> this.balance(commandSender)
-            ListingCommands.GIVE_POINTS -> this.givePoints(commandSender, subArgs.drop(1))
-            ListingCommands.REMOVE_POINTS -> this.removePoints(commandSender, subArgs.drop(1))
-            ListingCommands.CREATE -> this.create(commandSender, subArgs.drop(1))
-            ListingCommands.REMOVE -> this.remove(commandSender, args.drop(1))
-            ListingCommands.LIST -> this.list(commandSender, args.drop(1))
+            // PASSE subArgs DIRETAMENTE, NÃO DÊ DROP(1) DE NOVO
+            ListingCommands.GIVE_POINTS -> this.givePoints(commandSender, subArgs)
+            ListingCommands.REMOVE_POINTS -> this.removePoints(commandSender, subArgs)
+            ListingCommands.CREATE -> this.create(commandSender, subArgs)
+            ListingCommands.REMOVE -> this.remove(commandSender, subArgs)
+            ListingCommands.LIST -> this.list(commandSender, subArgs)
         }
     }
 
@@ -152,14 +154,20 @@ class ListingCommand : BaseCommand(
             return true
         }
 
-        val quantity = args.getOrNull(1)?.toIntOrNull() ?: currentItem.amount
-        if(quantity > currentItem.amount || quantity > 64){
-            sender.sendMessage(
-                Component.translatable(
-                    "listing.create.error.invalid_amount",
+        val detectedCategory = MarketCategory.fromMaterial(currentItem.type)
+
+        var quantity = args.getOrNull(1)?.toIntOrNull()
+        if(quantity != null){
+            if(quantity > currentItem.amount || quantity > 64 || quantity <= 0){
+                sender.sendMessage(
+                    Component.translatable(
+                        "listing.create.error.invalid_amount",
+                    )
                 )
-            )
-            return true
+                return true
+            }
+        } else{
+            quantity = currentItem.amount
         }
 
         val itemParaSalvar = currentItem.clone()
@@ -171,7 +179,8 @@ class ListingCommand : BaseCommand(
             sellerUuid = sender.uniqueId,
             itemData = itemBytes,
             quantity = quantity,
-            askingPricePerItem = price
+            askingPricePerItem = price,
+            category = detectedCategory,
         )
 
         val savedListing: Listing = listing.save()
@@ -289,17 +298,25 @@ class ListingCommand : BaseCommand(
             2 -> {
                 when(args[0].lowercase()) {
                     ListingCommands.REMOVE.command -> suggestions.addAll(listingDao.getListingIds((sender as Player).uniqueId).map { it.toString() })
-//                    ListingCommands.CREATE.command -> suggestions.add
+                    ListingCommands.CREATE.command -> {
+                        // Se o jogador ainda não digitou nada no segundo argumento, mostra o "fantasma"
+                        if (args[1].isEmpty()) {
+                            suggestions.add("<price>")
+                        }
+                    }
                     ListingCommands.GIVE_POINTS.command -> suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                     ListingCommands.REMOVE_POINTS.command ->  suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                     ListingCommands.LIST.command -> suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                 }
             }
-//            3-> {
-//                if(args[0].equals(ListingCommands.CREATE.command, ignoreCase = true)) {
-////                    suggestions.add("<amount>")
-//                }
-//            }
+            3->{
+                if (args[0].equals(ListingCommands.CREATE.command, ignoreCase = true)) {
+                    // Se o jogador ainda não digitou nada no terceiro argumento, mostra o "fantasma"
+                    if (args[2].isEmpty()) {
+                        suggestions.add("<amount>")
+                    }
+                }
+            }
         }
 
         return suggestions;

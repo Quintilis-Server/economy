@@ -4,6 +4,7 @@ import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.transaction.Transaction
 import org.quintilis.economy.entities.listings.Listing
+import org.quintilis.economy.market.MarketCategory
 import org.quintilis.factions.dao.BaseDao
 import java.util.UUID
 
@@ -32,4 +33,24 @@ interface ListingDao: BaseDao<Listing, Int> {
 
     @SqlQuery("SELECT * FROM listings WHERE status = 'ACTIVE'")
     fun findActive(): List<Listing>
+
+    @SqlQuery("""
+        SELECT * FROM listings
+        WHERE category = :category
+            AND status = 'ACTIVE'
+        ORDER BY created_at DESC
+        LIMIT :limit OFFSET :offset
+    """)
+    fun getListingByCategory(
+        @Bind("category") category: MarketCategory,
+        @Bind("offset") offset: Int,
+        @Bind("limit") limit: Int
+    ): List<Listing>
+
+    @SqlQuery("""
+        SELECT COUNT(*) FROM listings
+        WHERE category = :category
+        AND status = 'ACTIVE'
+    """)
+    fun getTotalByCategory(@Bind("category") category: MarketCategory): Int
 }

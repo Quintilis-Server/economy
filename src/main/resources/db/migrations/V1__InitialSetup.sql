@@ -1,14 +1,15 @@
 -- Listing
 CREATE TABLE listings(
-     id                      SERIAL PRIMARY KEY ,
-     seller_uuid             UUID                                NOT NULL
-         REFERENCES players(id),
-     quantity                INTEGER                             NOT NULL,
-     asking_price_per_item   INTEGER                             NOT NULL,
-     created_at              TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL ,
-     expires_at              TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP + '2 HOURS') NOT NULL ,
-     status                  VARCHAR(30) DEFAULT 'ACTIVE'        NOT NULL,
-     item_data               BYTEA                               NOT NULL
+    id                      SERIAL PRIMARY KEY ,
+    seller_uuid             UUID                                NOT NULL
+     REFERENCES players(id),
+    quantity                INTEGER                             NOT NULL,
+    asking_price_per_item   INTEGER                             NOT NULL,
+    created_at              TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+    expires_at              TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP + '2 HOURS') NOT NULL ,
+    status                  VARCHAR(30) DEFAULT 'ACTIVE'        NOT NULL,
+    category                VARCHAR(10) DEFAULT 'OTHER'        NOT NULL,
+    item_data               BYTEA                               NOT NULL
 );
 
 CREATE INDEX idx_listing_seller_status

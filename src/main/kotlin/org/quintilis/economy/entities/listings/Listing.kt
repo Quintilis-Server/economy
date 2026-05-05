@@ -3,6 +3,7 @@ package org.quintilis.economy.entities.listings
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.quintilis.economy.market.MarketCategory
 import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
@@ -29,6 +30,8 @@ data class Listing(
     val expiresAt: Instant = Instant.now().plus(7, ChronoUnit.DAYS),
     @Column("status")
     var status: ListingStatus = ListingStatus.ACTIVE,
+    @Column("category")
+    var category: MarketCategory
 ): BaseEntity(){
     fun getItem(): ItemStack {
         val item = ItemStack.deserializeBytes(itemData)

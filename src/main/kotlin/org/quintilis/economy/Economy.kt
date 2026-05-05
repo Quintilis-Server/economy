@@ -16,6 +16,7 @@ import org.quintilis.factions.annotations.AutoRegister
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.managers.DatabaseManager
 import org.quintilis.factions.managers.RedisManager
+import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.ClassScanner
 import java.sql.Connection
@@ -65,7 +66,7 @@ class Economy : JavaPlugin() {
     }
 
     private fun registerCommands(){
-        val commands: List<BaseCommand> = listOf(ListingCommand(), TransferCommand(), MarketCommand())
+        val commands: List<BaseCommand> = listOf(ListingCommand(), TransferCommand(), MarketCommand(this))
         this.server.commandMap.registerAll("economy", commands)
     }
 
@@ -97,34 +98,7 @@ class Economy : JavaPlugin() {
     }
 
     private fun registerTranslations() {
-
-        val translationKey = Key.key("economy", "translations")
-
-        val store = MiniMessageTranslationStore.create(translationKey)
-
-        val english = Locale.US
-        val portuguese = Locale.forLanguageTag("pt-BR")
-
-        val bundlePath = "translations.economy"
-
-        try {
-            val bundleEN = ResourceBundle.getBundle(bundlePath, english)
-            val bundlePT = ResourceBundle.getBundle(bundlePath, portuguese)
-
-            store.registerAll(english, bundleEN, false)
-            store.registerAll(portuguese, bundlePT, false)
-
-        } catch (e: MissingResourceException) {
-            logger.warning("NÃO FOI POSSÍVEL ENCONTRAR OS ARQUIVOS DE TRADUÇÃO NO JAR!")
-            logger.warning("Verifique o caminho: $bundlePath")
-            return
-        }
-
-        GlobalTranslator.translator().addSource(store)
-
-        logger.info("Translation sources (en, pt_BR) registered successfully.")
-
-        logger.info("Plugin ${this.name} successfully initiated")
+        TranslationManager.registerTranslations(this, "economy")
     }
 
     override fun onDisable() {
