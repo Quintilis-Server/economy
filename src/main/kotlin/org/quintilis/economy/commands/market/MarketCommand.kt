@@ -1,18 +1,15 @@
 package org.quintilis.economy.commands.market
 
 import org.bukkit.command.CommandSender
-import org.quintilis.economy.commands.BaseCommand
-import org.quintilis.economy.commands.HelpEntry
+import org.quintilis.factions.commands.BaseCommand
 
 class MarketCommand: BaseCommand(
     name = "market",
     description = "Main buy command",
     usage = "/market <subcommand>",
-    aliases = listOf("m")
+    aliases = listOf("m"),
+    commands = MarketCommands.entries
 ) {
-    override val helpEntries: Array<HelpEntry> = MarketCommands.entries
-        .map { it.helpEntry }
-        .toTypedArray()
 
     override fun commandWrapper(
         commandSender: CommandSender,

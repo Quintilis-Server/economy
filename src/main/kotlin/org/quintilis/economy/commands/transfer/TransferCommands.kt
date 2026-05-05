@@ -1,30 +1,27 @@
 package org.quintilis.economy.commands.transfer
 
-import org.quintilis.economy.commands.Commands
-import org.quintilis.economy.commands.HelpEntry
+import org.quintilis.factions.commands.Commands
+import org.quintilis.factions.commands.HelpEntry
 
 enum class TransferCommands(
     override val command: String,
     override val usage: String,
-    override val helpEntry: HelpEntry
-): Commands {
+    override val helpEntry: HelpEntry,
+    override val subCommands: Array<out Commands>? = null
+    ): Commands {
 
     SEND(
         "send",
         "/transfer send [player] [amount]",
         HelpEntry(
-            "/transfer send [player] [amount]",
-            "send",
             "transfer.command.description",
-            "economy.usage"
+            "economy.usage",
         )
     ),
     LIST(
         "list",
         "/transfer list",
         HelpEntry(
-            "/transfer list",
-            "list",
             "transfer.list.command.description",
             "economy.usage"
         )

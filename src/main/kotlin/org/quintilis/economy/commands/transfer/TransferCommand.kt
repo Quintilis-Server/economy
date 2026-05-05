@@ -1,41 +1,32 @@
 package org.quintilis.economy.commands.transfer
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.Style
-import net.kyori.adventure.text.format.TextColor
-import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.quintilis.economy.commands.BaseCommand
-import org.quintilis.economy.commands.HelpEntry
-import org.quintilis.economy.dao.ListingDao
-import org.quintilis.economy.dao.MarketTransactionDao
-import org.quintilis.economy.dao.PlayerDao
-import org.quintilis.economy.dao.TransactionDao
-import org.quintilis.economy.entities.PlayerEntity
-import org.quintilis.economy.entities.transactions.Transaction
 import org.quintilis.economy.entities.transactions.TransactionType
-import org.quintilis.economy.managers.DatabaseManager
+import org.quintilis.economy.services.EconomyServices
 import org.quintilis.economy.services.TransactionService
+import org.quintilis.factions.commands.BaseCommand
+import org.quintilis.factions.services.FactionsServices
 
 class TransferCommand: BaseCommand(
     name = "transfer",
     description = "Transfer points.",
     usage="/transfer [player] [amount]",
-    aliases = listOf("t")
+    aliases = listOf("t"),
+    commands = TransferCommands.entries
 ) {
 
-    private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
-    private val transactionDao = DatabaseManager.getDAO(TransactionDao::class)
-    private val listingDao = DatabaseManager.getDAO(ListingDao::class)
-    private val marketTransactionDao = DatabaseManager.getDAO(MarketTransactionDao::class)
+    private val playerCache = FactionsServices.playerCache
+    private val transactionCache = EconomyServices.transactionCache
+    private val listingCache = EconomyServices.listingCache
+    private val marketTransactionCache = EconomyServices.marketTransactionCache
 
-    override val helpEntries: Array<HelpEntry> = TransferCommands.entries
-        .map {it.helpEntry}
-        .toTypedArray()
+//    override val helpEntries: Array<HelpEntry> = TransferCommands.entries
+//        .map {it.helpEntry}
+//        .toTypedArray()
 
     override fun commandWrapper(commandSender: CommandSender, label: String, args: Array<out String>): Boolean {
         return when(args[0].lowercase()){
@@ -45,11 +36,11 @@ class TransferCommand: BaseCommand(
     }
 
     private fun list(sender: CommandSender): Boolean{
-        val transactions = transactionDao.getTransactionsByPlayer((sender as Player).uniqueId)
+        val transactions = transactionCache.getTransactionsByPlayer((sender as Player).uniqueId)
         val finalTransactions = transactions.mapNotNull { t ->
 
             // (Lembrete: Isso gera o problema N+1 de performance SQL, mas seguindo sua lógica:)
-            val player = playerDao.findById(t.playerId) ?: return@mapNotNull null
+            val player = playerCache.findById(t.playerId) ?: return@mapNotNull null
 
             when (t.transactionType) {
                 // CASO 1: Transferências
@@ -65,8 +56,8 @@ class TransferCommand: BaseCommand(
 
                 // CASO 2: Mercado
                 TransactionType.MARKET_BUY, TransactionType.MARKET_SELL -> {
-                    val marketTransaction = marketTransactionDao.findByTransactionId(t.id!!) ?: return@mapNotNull null
-                    val listing = listingDao.findById(marketTransaction.listingId) ?: return@mapNotNull null
+                    val marketTransaction = marketTransactionCache.findByTransactionId(t.id!!) ?: return@mapNotNull null
+                    val listing = listingCache.findById(marketTransaction.listingId) ?: return@mapNotNull null
                     Component.translatable(
                         "market.list.${t.transactionType.name.lowercase()}_line_response",
                         Argument.numeric("id", t.id),
@@ -87,7 +78,10 @@ class TransferCommand: BaseCommand(
         try{
 
             if(args.size != 2) return this.argumentsMissing(sender)
-            val receiverPlayer = Bukkit.getPlayer(args[0]) ?: return this.noPlayer(sender)
+            val receiverPlayer = Bukkit.getPlayer(args[0]) ?: run {
+                this.noPlayer(sender)
+                return true
+            }
             if(receiverPlayer == sender){
                 sender.sendMessage{
                     Component.translatable("transfer.error.same_player")
@@ -103,8 +97,8 @@ class TransferCommand: BaseCommand(
             val senderPlayer = sender as Player
             val amount = args[1].toIntOrNull() ?: return this.argumentsMissing(sender)
 
-            val senderEntity = playerDao.findById(senderPlayer.uniqueId) ?: return false
-            val receiverEntity = playerDao.findById(receiverPlayer.uniqueId) ?: return false
+            val senderEntity = playerCache.findById(senderPlayer.uniqueId) ?: return false
+            val receiverEntity = playerCache.findById(receiverPlayer.uniqueId) ?: return false
 
             if(senderEntity.points < amount){
                 sender.sendMessage {

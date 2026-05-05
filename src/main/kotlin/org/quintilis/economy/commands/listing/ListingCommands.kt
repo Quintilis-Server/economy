@@ -1,19 +1,18 @@
 package org.quintilis.economy.commands.listing
 
-import org.quintilis.economy.commands.Commands
-import org.quintilis.economy.commands.HelpEntry
+import org.quintilis.factions.commands.Commands
+import org.quintilis.factions.commands.HelpEntry
 
 enum class ListingCommands(
     override val command: String,
     override val usage: String,
-    override val helpEntry: HelpEntry
+    override val helpEntry: HelpEntry,
+    override val subCommands: Array<out Commands>? = null
 ): Commands {
     REMOVE(
         "remove",
         "/listing remove [id]",
         HelpEntry(
-            "/listing remove [id]",
-            "remove",
             "listing.remove.command.description",
             "economy.usage"
         )
@@ -22,8 +21,6 @@ enum class ListingCommands(
         "create",
         "/listing create [price] [quantity]",
         HelpEntry(
-            "/listing create [price] [quantity]",
-            "create",
             "listing.create.command.description",
             "economy.usage"
         )
@@ -32,8 +29,6 @@ enum class ListingCommands(
         "balance",
         "/listing balance",
         HelpEntry(
-            "/listing balance",
-            "balance",
             "listing.balance.command.description",
             "economy.usage"
         )
@@ -52,8 +47,6 @@ enum class ListingCommands(
         "list",
         "/listing list [player]",
         HelpEntry(
-            "/listing list [player]",
-            "list",
             "listing.list.command.description",
             "economy.usage"
         )
@@ -62,8 +55,6 @@ enum class ListingCommands(
         "givepoints",
         "/listing givepoints [player] [points]",
         HelpEntry(
-            "/listing givepoints [player] [points]",
-            "givepoints",
             "listing.give_points.command.description",
             "economy.op"
         )
@@ -72,8 +63,6 @@ enum class ListingCommands(
         "removepoints",
         "/listing removepoints [player] [points]",
         HelpEntry(
-            "/listing removepoints [player] [points]",
-            "removepoints",
             "listing.remove_points.command.description",
             "economy.op"
         )

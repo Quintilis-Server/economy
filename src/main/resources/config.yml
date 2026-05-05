@@ -4,3 +4,7 @@ database:
   username: "postgres"
   password: "senha"
   dbName: "minecraft"
+redis:
+  host: localhost
+  port: 6379
+  database: 1

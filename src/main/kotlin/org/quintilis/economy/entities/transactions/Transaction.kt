@@ -1,8 +1,8 @@
 package org.quintilis.economy.entities.transactions
 
-import org.quintilis.economy.entities.annotations.Column
-import org.quintilis.economy.entities.annotations.PrimaryKey
-import org.quintilis.economy.entities.annotations.TableName
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
 import java.util.Date
 import java.util.UUID
 import java.time.Instant

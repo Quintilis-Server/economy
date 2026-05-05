@@ -2,12 +2,12 @@ package org.quintilis.economy.entities.transactions
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import org.quintilis.economy.dao.PlayerDao
-import org.quintilis.economy.entities.BaseEntity
-import org.quintilis.economy.entities.PlayerEntity
-import org.quintilis.economy.entities.annotations.Column
-import org.quintilis.economy.entities.annotations.PrimaryKey
-import org.quintilis.economy.entities.annotations.TableName
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
+import org.quintilis.factions.cache.PlayerCache
+import org.quintilis.factions.entities.BaseEntity
+import org.quintilis.factions.entities.player.PlayerEntity
 import java.util.UUID
 
 @TableName("admin_transaction_details")
@@ -22,7 +22,7 @@ class AdminTransaction(
         return Bukkit.getPlayer(this.adminId)
     }
 
-    fun getAdminPlayerEntity(playerDao: PlayerDao): PlayerEntity?{
+    fun getAdminPlayerEntity(playerDao: PlayerCache): PlayerEntity?{
         return playerDao.findById(this.adminId)
     }
 }

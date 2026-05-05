@@ -1,14 +1,14 @@
 package org.quintilis.economy.entities.transactions
 
 import org.quintilis.economy.cache.TransactionCache
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.entities.BaseEntity
-import org.quintilis.economy.entities.annotations.Column
-import org.quintilis.economy.entities.annotations.PrimaryKey
-import org.quintilis.economy.entities.annotations.TableName
 import org.quintilis.factions.cache.ChunkCache
 import org.quintilis.factions.cache.CoreCache
 import org.quintilis.factions.entities.chunk.ChunkEntity
-import org.quintilis.factions.entities.clan.CoreEntity
+import org.quintilis.factions.entities.clan.ClanCoreEntity
 
 @TableName("chunk_transaction_details")
 class ChunkTransaction(
@@ -26,7 +26,7 @@ class ChunkTransaction(
         return chunkCache.findById(chunkId)
     }
 
-    fun getCoreEntity(coreCache: CoreCache): CoreEntity? {
+    fun getCoreEntity(coreCache: CoreCache): ClanCoreEntity? {
         return coreCache.findById(coreId)
     }
 

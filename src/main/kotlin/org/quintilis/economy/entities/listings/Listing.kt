@@ -3,11 +3,10 @@ package org.quintilis.economy.entities.listings
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.quintilis.economy.entities.BaseEntity
-import org.quintilis.economy.entities.PlayerEntity
-import org.quintilis.economy.entities.annotations.Column
-import org.quintilis.economy.entities.annotations.PrimaryKey
-import org.quintilis.economy.entities.annotations.TableName
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
+import org.quintilis.factions.entities.BaseEntity
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID

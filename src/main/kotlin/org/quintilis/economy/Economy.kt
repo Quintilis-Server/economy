@@ -1,20 +1,24 @@
 package org.quintilis.economy
 
 import net.kyori.adventure.translation.GlobalTranslator
-import net.kyori.adventure.translation.TranslationStore
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore
-import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslator
 import org.bukkit.command.Command
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.economy.commands.listing.ListingCommand
 import org.quintilis.economy.commands.market.MarketCommand
 import org.quintilis.economy.commands.transfer.TransferCommand
-import org.quintilis.economy.listeners.PlayerJoinListener
 import org.quintilis.economy.managers.ConfigManager
-import org.quintilis.economy.managers.DatabaseManager
+import org.quintilis.economy.services.EconomyServices
+import org.quintilis.factions.Factions
+import org.quintilis.factions.annotations.AutoRegister
+import org.quintilis.factions.commands.BaseCommand
+import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.managers.RedisManager
+import org.quintilis.factions.services.FactionsServices
+import org.quintilis.factions.util.ClassScanner
 import java.sql.Connection
-import java.sql.SQLException
 import java.util.Locale
 import java.util.MissingResourceException
 import java.util.ResourceBundle
@@ -22,47 +26,74 @@ import java.util.ResourceBundle
 class Economy : JavaPlugin() {
     lateinit var connection: Connection;
     override fun onEnable() {
-        logger.info("Initializing Economy config")
         this.saveDefaultConfig()
-        ConfigManager.initialize(this.config)
-        logger.info("Connecting Database PostgreSQL")
-        try{
-            DatabaseManager.connect();
-            this.connection = DatabaseManager.getConnection();
-            logger.info("Connected to database")
-        }catch(e: SQLException){
-            logger.severe("Database connection error: ${e.message}")
+
+        ConfigManager.initialize(this.config, plugin = this)
+
+        try {
+            logger.info("Conectando ao banco de dados PostgreSQL...")
+            DatabaseManager.connect(this.logger, ConfigManager)
+            logger.info("Conexão com o banco de dados estabelecida com sucesso!")
+        } catch (e: Exception) {
+            logger.severe("FALHA AO CONECTAR COM O BANCO DE DADOS! Desabilitando o plugin...")
+            e.printStackTrace()
             server.pluginManager.disablePlugin(this)
+            return
         }
 
-        logger.info("Registering translations manually...")
-        this.registerTranslations()
+        try{
+            logger.info("Conectando ao banco de dados Redis...")
+            RedisManager.connect(ConfigManager)
+            logger.info("Conexão com o banco de dados REDIS estabelecida com sucesso!")
+        }catch (e: Exception){
+            logger.severe("FALHA AO CONECTAR COM O REDIS! Desabilitando o plugin...")
+            e.printStackTrace()
+            server.pluginManager.disablePlugin(this)
+            return
+        }
+        FactionsServices.init(this)
+        EconomyServices.init(this)
 
-        //add listener
-        this.server.pluginManager.registerEvents(PlayerJoinListener(this.logger), this)
+        this.registerEvents()
 
-        //commands
         this.registerCommands()
+
+        this.registerTranslations()
 
 
 
     }
 
     private fun registerCommands(){
-        fun printName(name: String){
-            logger.info("Registering Commands: $name")
+        val commands: List<BaseCommand> = listOf(ListingCommand(), TransferCommand(), MarketCommand())
+        this.server.commandMap.registerAll("economy", commands)
+    }
+
+    private fun registerEvents(){
+        val classes:List<Class<Listener>> = ClassScanner.findClasses<Listener, AutoRegister>(
+            this,
+            "org.quintilis.economy",
+        )
+
+        classes.forEach { clazz ->
+            val listener = try {
+                // 1. Tenta achar o construtor que pede (Factions)
+                clazz.getConstructor(Factions::class.java).newInstance(this)
+            } catch (e: NoSuchMethodException) {
+                try {
+                    // 2. Se falhar, tenta o construtor vazio ()
+                    clazz.getConstructor().newInstance()
+                } catch (e2: Exception) {
+                    // Se falhar os dois, avisa no console
+                    logger.severe("Não foi possível registrar o listener ${clazz.simpleName}. Verifique os construtores.")
+                    e2.printStackTrace()
+                    return@forEach
+                }
+            }
+
+            server.pluginManager.registerEvents(listener, this)
+            logger.info("Listener registrado: ${clazz.simpleName}")
         }
-        val listingCommand = ListingCommand();
-        this.server.commandMap.register(listingCommand.name, "economy", listingCommand)
-        printName(listingCommand.name)
-
-        val transferCommand = TransferCommand()
-        this.server.commandMap.register(transferCommand.name, "economy", transferCommand)
-        printName(transferCommand.name)
-
-        val marketCommand = MarketCommand()
-        this.server.commandMap.register(marketCommand.name, "economy", marketCommand)
-        printName(marketCommand.name)
     }
 
     private fun registerTranslations() {

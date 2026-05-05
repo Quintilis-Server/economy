@@ -4,9 +4,13 @@ import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.transaction.Transaction
 import org.quintilis.economy.entities.listings.Listing
+import org.quintilis.factions.dao.BaseDao
 import java.util.UUID
 
-interface ListingDao: BaseDao {
+interface ListingDao: BaseDao<Listing, Int> {
+    @SqlQuery("SELECT * FROM listings WHERE ")
+    fun findAllActiveListing(): List<Listing>
+
     @SqlQuery("select * from listings where seller_uuid = :seller")
     fun findBySeller(@Bind("seller") seller: UUID): List<Listing>
 

@@ -6,41 +6,47 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.quintilis.economy.commands.BaseCommand
-import org.quintilis.economy.commands.HelpEntry
-import org.quintilis.economy.dao.ListingDao
-import org.quintilis.economy.dao.PlayerDao
-import org.quintilis.economy.entities.PlayerEntity
 import org.quintilis.economy.entities.listings.Listing
 import org.quintilis.economy.entities.listings.ListingStatus
 import org.quintilis.economy.entities.transactions.AdminTransaction
 import org.quintilis.economy.entities.transactions.Transaction
 import org.quintilis.economy.entities.transactions.TransactionType
-import org.quintilis.economy.managers.DatabaseManager
+import org.quintilis.economy.services.EconomyServices
+import org.quintilis.factions.commands.BaseCommand
+import org.quintilis.factions.commands.clan.ClanCommands
+import org.quintilis.factions.entities.player.PlayerEntity
+import org.quintilis.factions.services.FactionsServices
 
 class ListingCommand : BaseCommand(
     name = "listing",
     description = "Main listing command",
     usage = "/<command> [subcomando]",
-    aliases = listOf("l")
+    aliases = listOf("l"),
+    commands = ListingCommands.entries
 ) {
 
-    val playerDao = DatabaseManager.getDAO(PlayerDao::class)
-    val listingDao = DatabaseManager.getDAO(ListingDao::class)
+    val playerCache = FactionsServices.playerCache
+    val listingDao = EconomyServices.listingCache
 
 
-    override val helpEntries: Array<HelpEntry> = ListingCommands.entries
-        .map { it.helpEntry }
-        .toTypedArray()
     override fun commandWrapper(commandSender: CommandSender, label: String, args: Array<out String>): Boolean {
-        return when(args[0].lowercase()) {
-            ListingCommands.BALANCE.command -> this.balance(commandSender)
-            ListingCommands.GIVE_POINTS.command -> this.givePoints(commandSender, args.drop(1))
-            ListingCommands.REMOVE_POINTS.command -> this.removePoints(commandSender, args.drop(1))
-            ListingCommands.CREATE.command -> this.create(commandSender, args.drop(1))
-            ListingCommands.REMOVE.command -> this.remove(commandSender, args.drop(1))
-            ListingCommands.LIST.command -> this.list(commandSender, args.drop(1))
-            else -> this.error(commandSender, args[0])
+        val rootCommand = ListingCommands.entries.find {
+            it.command.equals(args[0], ignoreCase = true)
+        }
+
+        if (rootCommand == null) {
+            this.unknownSubCommand(commandSender, args[0])
+            return true
+        }
+
+        val subArgs = args.drop(1)
+        return when(rootCommand) {
+            ListingCommands.BALANCE -> this.balance(commandSender)
+            ListingCommands.GIVE_POINTS -> this.givePoints(commandSender, subArgs.drop(1))
+            ListingCommands.REMOVE_POINTS -> this.removePoints(commandSender, subArgs.drop(1))
+            ListingCommands.CREATE -> this.create(commandSender, subArgs.drop(1))
+            ListingCommands.REMOVE -> this.remove(commandSender, args.drop(1))
+            ListingCommands.LIST -> this.list(commandSender, args.drop(1))
         }
     }
 
@@ -190,11 +196,14 @@ class ListingCommand : BaseCommand(
         if(args.size < 2){
             return this.argumentsMissing(sender)
         }
-        val player = Bukkit.getPlayer(args[0]) ?: return this.noPlayer(sender)
+        val player = Bukkit.getPlayer(args[0]) ?: run {
+            this.noPlayer(sender)
+            return true
+        }
 
         val points = args.getOrNull(1) ?: return this.argumentsMissing(sender)
 
-        val playerEntity = playerDao.findById(player.uniqueId) ?: return false
+        val playerEntity = playerCache.findById(player.uniqueId) ?: return false
         playerEntity.points += points.toInt()
         val savedTransaction = Transaction(
             playerId = player.uniqueId,
@@ -224,9 +233,12 @@ class ListingCommand : BaseCommand(
         if(args.size> 2){
             return this.argumentsMissing(sender)
         }
-        val player = Bukkit.getPlayer(args[0]) ?: return this.noPlayer(sender)
+        val player = Bukkit.getPlayer(args[0]) ?: run{
+            this.noPlayer(sender)
+            return true
+        }
 
-        val playerEntity = playerDao.findById(player.uniqueId) ?: return false
+        val playerEntity = playerCache.findById(player.uniqueId) ?: return false
         playerEntity.points -= args[1].toInt()
 
         val savedTransaction = Transaction(
@@ -252,7 +264,7 @@ class ListingCommand : BaseCommand(
     }
 
     private fun balance(sender: CommandSender) : Boolean{
-        val playerEntity = playerDao.findById((sender as Player).uniqueId) ?: return false
+        val playerEntity = playerCache.findById((sender as Player).uniqueId) ?: return false
         sender.sendMessage {
             Component.translatable(
                 "listing.balance.response",
