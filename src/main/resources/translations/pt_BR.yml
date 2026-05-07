@@ -102,6 +102,10 @@ transaction:
 # Mercado
 # ============================================
 market:
+    item:
+        details:
+            - "Item Vendido pelo jogador <player>"
+            - "Valor: <price>"
     command:
         description: "Comando para abrir o menu do mercado."
     weapons: "<red><bold>Mercado de Armas"
@@ -111,9 +115,9 @@ market:
     ores: "<gold><bold>Mercado de Minérios"
     blocks: "<gray><bold>Mercado de Blocos"
     purchase:
-        success: "<green>Você comprou <bold><0>x <1></bold> por <bold><gold><2></gold></bold> pontos!"
+        success: "<green>Você comprou <bold><amount>x <item></bold> por <bold><gold><price></gold></bold> pontos!"
         error:
-            insufficient_funds: "<red>Você não tem pontos suficientes! Necessário: <bold><0></bold>, Você tem: <bold><1></bold>"
+            insufficient_funds: "<red>Você não tem pontos suficientes! Necessário: <bold><needed></bold>, Você tem: <bold><have></bold>"
             not_found: "<red>Anúncio não encontrado ou já foi vendido."
             seller_is_buyer: "<red>Você não pode comprar seu próprio anúncio!"
             inventory_full: "<red>Inventário cheio! Libere espaço e tente novamente."

@@ -53,4 +53,7 @@ interface ListingDao: BaseDao<Listing, Int> {
         AND status = 'ACTIVE'
     """)
     fun getTotalByCategory(@Bind("category") category: MarketCategory): Int
+
+    @SqlQuery("SELECT * FROM listings WHERE id = :id FOR UPDATE")
+    fun findByIdForUpdate(@Bind("id") id: Int): Listing?
 }

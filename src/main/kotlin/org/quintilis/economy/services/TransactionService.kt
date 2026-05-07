@@ -4,92 +4,90 @@ import org.bukkit.Chunk
 import org.quintilis.economy.dao.ListingDao
 import org.quintilis.economy.entities.listings.Listing
 import org.quintilis.economy.entities.listings.ListingStatus
-import org.quintilis.economy.entities.transactions.MarketTransaction
 import org.quintilis.economy.entities.transactions.Transaction
 import org.quintilis.economy.entities.transactions.TransactionType
-import org.quintilis.economy.exceptions.InvalidQuantity
-import org.quintilis.economy.exceptions.ListingNotActive
-import org.quintilis.economy.exceptions.ListingNotFound
-import org.quintilis.economy.exceptions.NotEnoughPoints
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.player.PlayerEntity
+import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.services.FactionsServices
 
 class TransactionService {
+    sealed class TransactionResult {
+        object NOT_FOUND : TransactionResult()
+        object ALREADY_SOLD : TransactionResult()
+        object INSUFFICIENT_FUNDS : TransactionResult()
+        object SELLER_IS_BUYER : TransactionResult()
+        object INVENTORY_FULL : TransactionResult()
+        object GENERIC_ERROR : TransactionResult()
+        data class SUCCESS_PARTIAL(val listing: Listing, val finalQuantity: Int) : TransactionResult()
+    }
     companion object{
-        fun createListingTransaction(
-            seller: PlayerEntity,
+        fun buyPartialListing(
             buyer: PlayerEntity,
             listingId: Int,
-            quantity: Int
-        ): Unit {
-            lateinit var boughtListing: Listing
+            requestedAmount: Int
+        ): TransactionResult {
             //fazer dentro da transaction para que duas pessoas não comprem do mesmo anúncio
-            DatabaseManager.jdbi.inTransaction<Unit, Exception> { handle ->
+            return try {
 
-                val listingDao = handle.attach(ListingDao::class.java)
-                val listing = listingDao.findAndLockById(listingId)
+                DatabaseManager.jdbi.inTransaction<TransactionResult, Exception> { handle ->
+                    val dao = handle.attach(ListingDao::class.java)
 
-                if(listing == null){
-                    handle.rollback()
-                    throw ListingNotFound(listingId)
+                    val listing = dao.findByIdForUpdate(listingId)
+                        ?: return@inTransaction TransactionResult.NOT_FOUND
+                    //                val listing = listingCache.findById(listingId) ?: return@inTransaction
+
+                    if (listing.status != ListingStatus.ACTIVE) {
+                        return@inTransaction TransactionResult.ALREADY_SOLD
+                    }
+
+                    if (listing.sellerUuid == buyer.id) {
+                        return@inTransaction TransactionResult.SELLER_IS_BUYER
+                    }
+
+                    val actualAmount = if (requestedAmount > listing.quantity) listing.quantity else requestedAmount
+                    val totalPrice = listing.askingPricePerItem * actualAmount
+
+                    if (buyer.points < totalPrice) return@inTransaction TransactionResult.INSUFFICIENT_FUNDS
+
+                    buyer.points -= totalPrice
+                    buyer.save<BaseEntity>()
+
+                    val sellerEntity = FactionsServices.playerCache.findById(listing.sellerUuid)
+                    sellerEntity?.let {
+                        it.points += totalPrice
+                        it.save<BaseEntity>()
+                    }
+
+                    Transaction(
+                        playerId = buyer.id,
+                        transactionType = TransactionType.MARKET_BUY,
+                        change = -totalPrice,
+                    ).save<Transaction>()
+
+                    Transaction(
+                        playerId = sellerEntity?.id!!,
+                        transactionType = TransactionType.MARKET_SELL,
+                        change = totalPrice,
+                    ).save<Transaction>()
+
+                    // 5. Atualiza o Anúncio
+                    listing.quantity -= actualAmount
+                    if (listing.quantity <= 0) {
+                        listing.status = ListingStatus.SOLD
+                    }
+
+                    listing.save<BaseEntity>()
+
+                    buyer.getPlayer()?.sendTranslatable("market.")
+
+                    // Retornamos a quantidade que ele realmente conseguiu comprar
+                    TransactionResult.SUCCESS_PARTIAL(listing, actualAmount)
                 }
-
-                if(listing.status != ListingStatus.ACTIVE){
-                    handle.rollback()
-                    throw ListingNotActive(listingId)
-                }
-
-                if(listing.quantity < quantity){
-                    handle.rollback()
-                    throw InvalidQuantity(quantity, listingId)
-                }
-
-                val value = listing.askingPricePerItem * quantity
-
-                if(buyer.points > value){
-                    handle.rollback()
-                    throw NotEnoughPoints()
-                }
-
-                //salva as transações
-                val buyTransaction = Transaction(
-                    playerId = buyer.id,
-                    transactionType = TransactionType.MARKET_BUY,
-                    change = -value
-                ).save<Transaction>()
-
-                MarketTransaction(
-                    transactionId = buyTransaction.id!!,
-                    quantity = quantity,
-                    listingId = listing.id!!
-                ).save<MarketTransaction>()
-
-                Transaction(
-                    playerId = seller.id,
-                    transactionType = TransactionType.MARKET_SELL,
-                    change = value,
-                    parentId = buyTransaction.id
-                ).save<Transaction>()
-
-                //checa se foi comprado todos os itens do anúncio
-                if(quantity == listing.quantity){
-                    //se sim ele deixa o anúncio como vendido
-                    listing.status = ListingStatus.SOLD
-                }else{
-                    //se não ele subtrai da quantidade do anúncio
-                    listing.quantity -= quantity
-                }
-                val savedListing = listing.save<Listing>()
-
-                //muda os pontos dos jogadores
-                seller.points +=value
-                buyer.points -=value
-
-                seller.save<BaseEntity>()
-                buyer.save<BaseEntity>()
-
-                boughtListing = savedListing
+            } catch (e: Exception) {
+                e.printStackTrace()
+                TransactionResult.GENERIC_ERROR
             }
         }
 
