@@ -140,3 +140,13 @@ gui:
                 price: "<gray>Preço por item: <gold><0>"
                 total: "<gray>Preço total: <bold><gold><0>"
                 click_to_buy: "<green><bold>Clique para comprar!"
+                
+npc:
+    market:
+        armor: "Armaduras"
+        weapons: "Armas"
+        tools: "Ferramentas"
+        food: "Comida"
+        ores: "Minérios"
+        blocks: "Blocos"
+        other: "Outros"

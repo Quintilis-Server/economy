@@ -1,28 +1,21 @@
 package org.quintilis.economy
 
-import net.kyori.adventure.translation.GlobalTranslator
-import net.kyori.adventure.key.Key
-import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore
-import org.bukkit.command.Command
+import org.bukkit.Bukkit
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.economy.commands.listing.ListingCommand
-import org.quintilis.economy.commands.market.MarketCommand
 import org.quintilis.economy.commands.transfer.TransferCommand
 import org.quintilis.economy.managers.ConfigManager
 import org.quintilis.economy.services.EconomyServices
-import org.quintilis.factions.Factions
 import org.quintilis.factions.annotations.AutoRegister
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.managers.DatabaseManager
 import org.quintilis.factions.managers.RedisManager
 import org.quintilis.factions.managers.TranslationManager
+import org.quintilis.factions.placeholders.FactionsLangExpansion
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.ClassScanner
 import java.sql.Connection
-import java.util.Locale
-import java.util.MissingResourceException
-import java.util.ResourceBundle
 
 class Economy : JavaPlugin() {
     lateinit var connection: Connection;
@@ -66,7 +59,8 @@ class Economy : JavaPlugin() {
     }
 
     private fun registerCommands(){
-        val commands: List<BaseCommand> = listOf(ListingCommand(), TransferCommand(), MarketCommand(this))
+        //, MarketCommand(this)
+        val commands: List<BaseCommand> = listOf(ListingCommand(), TransferCommand())
         this.server.commandMap.registerAll("economy", commands)
     }
 
@@ -78,17 +72,20 @@ class Economy : JavaPlugin() {
 
         classes.forEach { clazz ->
             val listener = try {
-                // 1. Tenta achar o construtor que pede (Factions)
-                clazz.getConstructor(Factions::class.java).newInstance(this)
+                // Agora ele procura pelo construtor genérico JavaPlugin
+                clazz.getConstructor(JavaPlugin::class.java).newInstance(this)
             } catch (e: NoSuchMethodException) {
                 try {
-                    // 2. Se falhar, tenta o construtor vazio ()
-                    clazz.getConstructor().newInstance()
-                } catch (e2: Exception) {
-                    // Se falhar os dois, avisa no console
-                    logger.severe("Não foi possível registrar o listener ${clazz.simpleName}. Verifique os construtores.")
-                    e2.printStackTrace()
-                    return@forEach
+                    // Tenta achar o construtor exato (Factions) como fallback
+                    clazz.getConstructor(Economy::class.java).newInstance(this)
+                } catch (e2: NoSuchMethodException) {
+                    try {
+                        // Se falhar os dois, tenta o construtor vazio ()
+                        clazz.getConstructor().newInstance()
+                    } catch (e3: Exception) {
+                        logger.severe("Não foi possível registrar o listener ${clazz.simpleName}. Verifique os construtores.")
+                        return@forEach
+                    }
                 }
             }
 
@@ -98,6 +95,14 @@ class Economy : JavaPlugin() {
     }
 
     private fun registerTranslations() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            FactionsLangExpansion(
+                "economy",
+                "Quintilis",
+                "1.0-SNAPSHOT",
+            ).register()
+            logger.info("PlaceholderAPI conectado! Traduções dinâmicas ativadas.")
+        }
         TranslationManager.registerTranslations(this, "economy")
     }
 

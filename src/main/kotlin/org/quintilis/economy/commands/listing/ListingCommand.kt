@@ -1,10 +1,13 @@
 package org.quintilis.economy.commands.listing
 
+import de.oliver.fancynpcs.api.FancyNpcsPlugin
+import de.oliver.fancynpcs.api.NpcData
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.quintilis.economy.entities.listings.Listing
 import org.quintilis.economy.entities.listings.ListingStatus
@@ -14,8 +17,8 @@ import org.quintilis.economy.entities.transactions.TransactionType
 import org.quintilis.economy.market.MarketCategory
 import org.quintilis.economy.services.EconomyServices
 import org.quintilis.factions.commands.BaseCommand
-import org.quintilis.factions.commands.clan.ClanCommands
 import org.quintilis.factions.entities.player.PlayerEntity
+import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.services.FactionsServices
 
 class ListingCommand : BaseCommand(
@@ -49,9 +52,53 @@ class ListingCommand : BaseCommand(
             ListingCommands.CREATE -> this.create(commandSender, subArgs)
             ListingCommands.REMOVE -> this.remove(commandSender, subArgs)
             ListingCommands.LIST -> this.list(commandSender, subArgs)
+            ListingCommands.ADMIN -> this.admin(commandSender, subArgs)
         }
     }
 
+    private fun createNpc(sender: Player, args: List<String>){
+        if(args.isEmpty()){
+            sender.sendTranslatable("error.missing_arguments")
+            return
+        }
+
+        val type = MarketCategory.fromString(args[0].lowercase())
+        if(type == null){
+            sender.sendTranslatable("error.unknown_subcommand")
+            return
+        }
+
+        try{
+            val npcData = NpcData(
+                type.name,
+                sender.uniqueId,
+                sender.location
+            )
+
+            npcData.displayName = "%economy_lang_npc.${type.displayTag}%"
+            npcData.type = EntityType.VILLAGER
+
+            npcData.isTurnToPlayer = true
+
+            val api = FancyNpcsPlugin.get()
+            val npc = api.npcAdapter.apply(npcData)
+
+            npc.create()
+            npc.spawnForAll()
+            api.npcManager.registerNpc(npc)
+
+            sender.sendTranslatable("listing.create_npc.success")
+        }catch(e: Exception){
+            e.printStackTrace()
+            sender.sendTranslatable("error.generic")
+        }
+    }
+    private fun admin(sender: CommandSender, args: List<String>): Boolean {
+        when(args[0]) {
+            AdminListingSubCommand.CREATE_NPC.command -> this.createNpc(sender as Player, args.drop(1))
+        }
+        return true
+    }
 
 
     private fun list(sender: CommandSender, args: List<String?>): Boolean{
@@ -307,13 +354,26 @@ class ListingCommand : BaseCommand(
                     ListingCommands.GIVE_POINTS.command -> suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                     ListingCommands.REMOVE_POINTS.command ->  suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
                     ListingCommands.LIST.command -> suggestions.addAll(Bukkit.getOfflinePlayers().mapNotNull { it.name })
+                    ListingCommands.ADMIN.command -> {
+                        // Se o jogador tiver permissão, sugere os subcomandos de admin
+                        suggestions.addAll(AdminListingSubCommand.entries.map { it.command })
+                    }
                 }
             }
             3->{
-                if (args[0].equals(ListingCommands.CREATE.command, ignoreCase = true)) {
-                    // Se o jogador ainda não digitou nada no terceiro argumento, mostra o "fantasma"
-                    if (args[2].isEmpty()) {
-                        suggestions.add("<amount>")
+                when (args[0].lowercase()) {
+                    // Sugestão para: /listing admin create_npc [categoria]
+                    ListingCommands.ADMIN.command -> {
+                        if (args[1].equals(AdminListingSubCommand.CREATE_NPC.command, ignoreCase = true)) {
+                            // Passamos a displayTag (ex: market.weapons) que o seu fromString espera
+                            suggestions.addAll(MarketCategory.entries.map { it.displayTag })
+                        }
+                    }
+                    // Sugestão para: /listing create 100 [quantidade]
+                    ListingCommands.CREATE.command -> {
+                        if (args[2].isEmpty()) {
+                            suggestions.add("<amount>")
+                        }
                     }
                 }
             }

@@ -18,3 +18,14 @@ commands:
         description: Main buy command
         aliases: [m]
         usage: /market [subcomando]
+        
+dependencies:
+    server:
+        FancyNpcs:
+            load: BEFORE
+            required: false
+            join-classpath: true
+        PlaceholderAPI:
+            load: BEFORE
+            required: true
+            join-classpath: true

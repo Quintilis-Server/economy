@@ -66,5 +66,13 @@ enum class ListingCommands(
             "listing.remove_points.command.description",
             "economy.op"
         )
+    ),
+    ADMIN(
+        "admin",
+        "/listing admin [subcommand]",
+        HelpEntry(
+            "listing.admin.command.description",
+            "economy.admin"
+        )
     )
 }
